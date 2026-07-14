@@ -1,30 +1,45 @@
-# Repository Guidelines
+# Repository-Richtlinien
 
-## Project Purpose and Structure
+## Projektzweck und Struktur
 
-This repository contains a Java command-line implementation of the classic Mastermind game, produced as an Iperka learning assignment. The authoritative assignment scan is `docs/AufgabenScann.pdf`; `docs/Mastermind.md` records the game rules only. Keep Java source in `src/main/java/`, tests in `src/test/java/`, and resources in `src/main/resources/`. Do not edit `.idea/` unless an IDE configuration change is intentional.
+Dieses Repository enthält eine Java-Kommandozeilenimplementierung des klassischen Mastermind-Spiels, die als Iperka-Lernauftrag erstellt wird. Der massgebende Aufgabenscan ist `docs/AufgabenScann.pdf`; `docs/Mastermind.md` hält nur die Spielregeln fest. Java-Quellcode gehört in `src/main/java/`, Tests in `src/test/java/` und Ressourcen in `src/main/resources/`. Bearbeite `.idea/` nur bei einer beabsichtigten Änderung der IDE-Konfiguration.
 
-The program must generate a secret four-colour code from six available colours; duplicate colours are allowed. A player receives at most seven guesses. Track ongoing, won, and lost states, and show feedback after every guess.
+Das Programm erzeugt einen geheimen Code aus vier Farben aus sechs verfügbaren Farben; Wiederholungen sind erlaubt. Ein Spieler erhält höchstens sieben Tipps. Verfolge die Zustände laufend, gewonnen und verloren und zeige nach jedem Tipp eine Rückmeldung.
 
-## Build, Test, and Run
+## Kompilieren, Testen und Ausführen
 
-No Maven or Gradle build is committed yet. Until one is added, compile and run with IntelliJ IDEA or the JDK:
+Es ist noch kein Maven- oder Gradle-Build vorhanden. Bis einer hinzugefügt wird, kompiliere und starte mit IntelliJ IDEA oder dem JDK:
 
 ```powershell
 javac -d out src/main/java/<package>/*.java
 java -cp out <package>.Main
 ```
 
-If Maven or Gradle is introduced, commit its wrapper and use it as the canonical build and test command. Never commit generated `out/`, `target/`, `build/`, or `.class` files.
+Wird Maven oder Gradle eingeführt, committe den jeweiligen Wrapper und verwende ihn als verbindlichen Build- und Testbefehl. Committe niemals generierte `out/`, `target/`, `build/` oder `.class`-Dateien.
 
-## Java Style and Design
+## Java-Stil und Design
 
-Use four-space indentation, same-line braces, `PascalCase` for classes, `camelCase` for methods and variables, and `UPPER_SNAKE_CASE` for constants. Keep classes focused: separate game flow, input/output, code generation, and feedback evaluation. Use arrays deliberately; the assignment assesses the ability to explain Java arrays, including two-dimensional arrays where used. Add comments for non-obvious logic, especially duplicate-colour feedback handling.
+Verwende vier Leerzeichen für Einrückungen, öffnende geschweifte Klammern auf derselben Zeile, `PascalCase` für Klassen, `camelCase` für Methoden und Variablen sowie `UPPER_SNAKE_CASE` für Konstanten. Halte Klassen fokussiert: Trenne Spielablauf, Ein- und Ausgabe, Codeerzeugung und Rückmeldeauswertung. Setze Arrays bewusst ein; die Aufgabe bewertet die Fähigkeit, Java-Arrays einschliesslich zweidimensionaler Arrays zu erklären. Kommentiere nicht offensichtliche Logik, insbesondere die Rückmeldung bei doppelten Farben.
 
-## Testing
+## Sprache
 
-Place unit tests under `src/test/java/` with mirrored packages. Name tests by behaviour, for example `returnsBlackMarkForCorrectColourAndPosition`. Cover exact matches, colours in wrong positions, duplicate colours, invalid input, all seven failed guesses, and victory. Make random code generation injectable or seedable so tests stay deterministic.
+Trenne Code und Dokumentation sprachlich. Java-Quellcode, Tests, Bezeichner und Code-Kommentare werden auf Englisch geschrieben. Dokumentation und jeder andere Fliesstext, einschliesslich der Konsolenausgabe, werden auf Deutsch geschrieben. Verwende die Umlaute `ä`, `ö` und `ü` anstelle von `ae`, `oe` und `ue`; nutze die Schweizer Schreibweise mit `ss` statt eines scharfen s.
 
-## Commits and Pull Requests
+## Tests
 
-There is no existing commit history. Use short imperative subjects such as `Add feedback evaluation` or `Handle seventh failed guess`. Keep commits narrow. Pull requests must summarize the behaviour changed, identify the relevant requirement, and list the commands or scenarios tested. Screenshots are unnecessary for the command-line version.
+Lege Unit-Tests mit gespiegelten Packages unter `src/test/java/` ab. Benenne Tests nach ihrem Verhalten, zum Beispiel `returnsBlackMarkForCorrectColourAndPosition`. Decke exakte Treffer, Farben an falschen Positionen, doppelte Farben, ungültige Eingaben, sieben fehlgeschlagene Tipps und einen Sieg ab. Die Zufallscodeerzeugung muss injizierbar oder seedbar sein, damit Tests deterministisch bleiben.
+
+## Dokumentation
+
+Prüfe bei jeder Änderung, Ergänzung oder Neuerstellung von Quellcode, Tests, Ressourcen, Build-Dateien oder Benutzerverhalten, ob die zugehörige Dokumentation angepasst werden muss. Erstelle, ergänze oder aktualisiere die relevante Dokumentation im selben Arbeitsumfang wie die technische Änderung. Dazu zählen insbesondere die README für Nutzung und Start, der Implementierungsplan für Architektur- und Umsetzungsentscheide sowie Dokumente unter docs/ für Anforderungen und Spielregeln. Halte Dokumentation und tatsächlichen Code konsistent; beschreibe keine Funktionen, Dateien oder Befehle als vorhanden, bevor sie umgesetzt sind.
+
+## Arbeitsweise
+
+- Hole bei Unklarheiten, Abwägungen und wichtigen Zwischenschritten frühzeitig Rückmeldung oder Entscheidungen ein.
+- Formuliere Antworten und Pläne strukturiert, präzise und mit ausreichender Begründung.
+- Prüfe Änderungen vor der Übergabe sorgfältig, einschliesslich betroffener Anforderungen, Dokumentation und Tests.
+- Kontrolliere Ergebnisse bei Bedarf mit geeigneten Tests, manuellen Szenarien oder einem Diff.
+
+## Commits und Pull Requests
+
+Es gibt noch keine Commit-Historie. Verwende kurze Betreffzeilen im Imperativ, beispielsweise `Add feedback evaluation` oder `Handle seventh failed guess`. Halte Commits eng abgegrenzt. Pull Requests müssen das geänderte Verhalten zusammenfassen, die relevante Anforderung benennen und die getesteten Befehle oder Szenarien auflisten. Screenshots sind für die Kommandozeilenversion nicht nötig.
