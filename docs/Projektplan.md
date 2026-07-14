@@ -33,7 +33,7 @@ Die Fachlogik wird von der Konsoleneingabe getrennt. Der Aufbau verwendet kleine
 Folgende Entscheidungen gelten für die Pflichtversion:
 
 - Die Anwendung ist ein Konsolenprogramm; eine GUI ist kein Ziel dieser zwei Tage.
-- Farben werden als vier durch Leerzeichen getrennte Nummern `1` bis `6` eingegeben. Die Konsole zeigt vorher eine eindeutige Legende.
+- Farben werden als vier durch Leerzeichen getrennte Nummern `0` bis `5` eingegeben. Die Konsole zeigt vorher eine eindeutige Legende.
 - Die Farben heissen Rot, Grün, Blau, Gelb, Orange und Violett.
 - Nach einem Spielende wird eine neue Runde mit `j` oder `n` angeboten.
 - Es wird kein Maven oder Gradle eingeführt. Das Projekt wird in IntelliJ kompiliert; JUnit-Tests werden dort ausgeführt.

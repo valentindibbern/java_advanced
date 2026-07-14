@@ -11,7 +11,7 @@ Das Programm erzeugt einen geheimen Code aus vier Farben aus sechs verfügbaren 
 Es ist noch kein Maven- oder Gradle-Build vorhanden. Bis einer hinzugefügt wird, kompiliere und starte mit IntelliJ IDEA oder dem JDK:
 
 ```powershell
-javac -d out src/main/java/<package>/*.java
+javac -d out src/Main/java/<package>/*.java
 java -cp out <package>.Main
 ```
 

@@ -1,30 +1,30 @@
 # Implementierungsplan – Mastermind
 
-> **Planungshinweis für das gesamte Dokument:** Dieser Plan beschreibt die vorgesehene Implementierung vor dem Programmieren. Klassennamen, Verantwortlichkeiten, Datenflüsse und Spielregeln sind verbindliche Leitplanken. Einzelne Sichtbarkeiten, Hilfsmethoden, Parameter oder Rückgabetypen können sich während der Umsetzung ändern, falls Tests oder eine einfachere Lösung dies fachlich begründen. Der tatsächlich implementierte und getestete Code ist am Ende massgebend.
+> **Planungshinweis für das gesamte Dokument:** Dieser Plan ist ein fortlaufend gepflegtes Designdokument für die vorgesehene Implementierung. Klassennamen, Verantwortlichkeiten, Datenflüsse und Spielregeln sind verbindliche Leitplanken. Einzelne Sichtbarkeiten, Hilfsmethoden, Parameter oder Rückgabetypen werden während der Umsetzung angepasst, wenn der tatsächliche Code, Tests oder eine einfachere Lösung dies fachlich begründen. Nach jeder solchen Änderung wird der betroffene Abschnitt dieses Dokuments nachgeführt; der tatsächlich implementierte und getestete Code bleibt massgebend.
 
 ## 1. Ziel, Umfang und technische Leitlinien
 
 Dieses Dokument plant ein Mastermind-Spiel als Java-Kommandozeilenprogramm. Das Programm erzeugt pro Runde einen geheimen, geordneten Code aus genau vier Farben. Die sechs zugelassenen Farben sind Rot, Grün, Blau, Gelb, Orange und Violett. Jede Farbe darf im Geheimcode und im Tipp mehrfach vorkommen. Der Spieler verfügt über höchstens sieben gültige Tipps. Nach jedem Tipp meldet das Programm die Zahl schwarzer Marken für richtige Farbe an richtiger Position sowie weisser Marken für richtige Farbe an falscher Position.
 
-Die Anwendung verwendet ausschliesslich das JDK. Sie benötigt keine externe Bibliothek, keinen Build-Manager und keine Konfigurationsdatei. ANSI-Escape-Sequenzen sorgen in einem geeigneten Terminal für Farbe, sind aber ausschliesslich Darstellung: Alle Informationen bleiben zusätzlich durch deutsche Texte, Zahlen und Symbole verständlich.
+Die Anwendung verwendet ausschliesslich das JDK. Sie benötigt keine externe Bibliothek, keinen Build-Manager und keine Konfigurationsdatei. ANSI-Escape-Sequenzen sorgen in einem geeigneten Terminal für Farbe, sind aber ausschliesslich Darstellung: Alle Informationen bleiben zusätzlich durch deutsche Texte, Zahlen und Symbole verständlich. Der vorhandene Quellcode ist ein Rohbau; noch nicht implementierte Klassen- und Methodenverträge in diesem Plan bleiben deshalb als Zielarchitektur dokumentiert. Die gegenwärtige `Color`-Datei importiert noch `org.jetbrains.annotations.NotNull`; dieser Import wird vor dem verbindlichen JDK-Kompilierweg entfernt oder die Bibliothek bewusst eingerichtet und dokumentiert.
 
 Die Architektur bleibt bewusst klein. Konkrete Klassen statt abstrakter Frameworks trennen Konsolenein- und -ausgabe von Spielzustand, Zufallscode und Rückmeldealgorithmus. So ist die Fachlogik isoliert testbar, ohne eine nicht benötigte Erweiterungsinfrastruktur einzuführen.
 
 ## 2. Bedienung und Ablauf einer Runde
 
-Beim Start zeigt die Konsole Titel, Farblegende und Eingabeform. Ein Tipp besteht aus vier durch Leerzeichen getrennten Zahlen von 1 bis 6. Der Spieler sieht vor jedem gültigen Tipp die Nummer des nächsten Versuchs. Ungültige Eingaben erklären den Fehler und zählen nicht.
+Beim Start zeigt die Konsole Titel, Farblegende und Eingabeform. Ein Tipp besteht aus vier durch Leerzeichen getrennten Zahlen von 0 bis 5. Der Spieler sieht vor jedem gültigen Tipp die Nummer des nächsten Versuchs. Ungültige Eingaben erklären den Fehler und zählen nicht.
 
 ~~~text
 Mastermind
-1 = Rot, 2 = Grün, 3 = Blau, 4 = Gelb, 5 = Orange, 6 = Violett
-Gib vier Farbnummern ein, zum Beispiel: 1 4 4 6
+0 = Rot, 1 = Grün, 2 = Blau, 3 = Gelb, 4 = Orange, 5 = Violett
+Gib vier Farbnummern ein, zum Beispiel: 0 3 3 5
 ~~~
 
 Der Ablauf einer Runde ist genau festgelegt:
 
 1. Die Konsole erstellt eine neue Game-Instanz. Diese erzeugt einen geheimen Code und startet im Zustand ONGOING.
 2. Die Konsole zeigt Versuch x von 7 und fordert eine Eingabe an.
-3. Eine Eingabe ist nur gültig, wenn sie genau vier ganze Zahlen von 1 bis 6 enthält. Jede Nummer wird in einen Color-Wert übersetzt.
+3. Eine Eingabe ist nur gültig, wenn sie genau vier ganze Zahlen von 0 bis 5 enthält. Jede Nummer wird in einen Color-Wert übersetzt.
 4. Game verarbeitet den gültigen Tipp, speichert ihn in der Historie und erzeugt ein TurnResult.
 5. Die Konsole zeigt den Tipp farbig sowie Schwarz: x und Weiss: y. Sie zeigt keine Zuordnung von Marken zu Positionen.
 6. Bei vier schwarzen Marken erhält die Runde den Zustand WON. Nach dem siebten nicht gewinnenden gültigen Tipp erhält sie LOST.
@@ -58,27 +58,27 @@ Alle übergebenen oder zurückgegebenen Color-Arrays werden defensiv kopiert. Ke
 
 ### 4.1 Color
 
-Color ist ein Java-Enum, keine Klasse und kein Interface. Es modelliert die einzige erlaubte Menge von Spielfarben. Ein Enum-Wert kombiniert die Eingabenummer, den deutschen Namen und die bereits in Ansi definierte Farbsequenz. Dadurch können Fachklassen nur gültige Farben verarbeiten, während ConsoleUI keine eigene Umrechnungstabelle führen muss.
+Color ist ein Java-Enum, keine Klasse und kein Interface. Es modelliert die einzige erlaubte Menge von Spielfarben. Ein Enum-Wert kombiniert die Eingabenummer, den deutschen Namen und seine ANSI-Farbsequenz. Dadurch können Fachklassen nur gültige Farben verarbeiten, während ConsoleUI keine eigene Umrechnungstabelle führen muss.
 
 | Wert | Eingabenummer | Anzeigename | ANSI-Konstante | Zweck |
 | --- | ---: | --- | --- | --- |
-| RED | 1 | Rot | Ansi.RED | Rote Spielfarbe. |
-| GREEN | 2 | Grün | Ansi.GREEN | Grüne Spielfarbe. |
-| BLUE | 3 | Blau | Ansi.BLUE | Blaue Spielfarbe. |
-| YELLOW | 4 | Gelb | Ansi.YELLOW | Gelbe Spielfarbe. |
-| ORANGE | 5 | Orange | Ansi.YELLOW | Orange wird mit der portablen ANSI-Farbe Gelb dargestellt; der Text bleibt Orange. |
-| PURPLE | 6 | Violett | Ansi.MAGENTA | Violette Spielfarbe. |
+| RED | 0 | Rot | `\u001B[31m` | Rote Spielfarbe. |
+| GREEN | 1 | Grün | `\u001B[32m` | Grüne Spielfarbe. |
+| BLUE | 2 | Blau | `\u001B[34m` | Blaue Spielfarbe. |
+| YELLOW | 3 | Gelb | `\u001B[33m` | Gelbe Spielfarbe. |
+| ORANGE | 4 | Orange | `\u001B[33m` | Orange wird mit der portablen ANSI-Farbe Gelb dargestellt; der Text bleibt Orange. |
+| PURPLE | 5 | Violett | `\u001B[35m` | Violette Spielfarbe. |
 
 | Name | Sichtbarkeit | Andere Attribute | Typ | Input | Input-Typ | Output | Output-Typ | Präzise Aufgabe |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | number | private | final | int | – | – | – | – | Eindeutige Nummer für die Konsoleneingabe. |
 | displayName | private | final | String | – | – | – | – | Deutscher, farbunabhängig lesbarer Anzeigename. |
-| ansiCode | private | final | String | – | – | – | – | Referenz auf eine vollständige ANSI-Farbsequenz aus Ansi. |
+| ansiCode | private | final | String | – | – | – | – | Vollständige ANSI-Farbsequenz dieses Enum-Werts. |
 | Color(int, String, String) | private | Enum-Konstruktor | – | number, displayName, ansiCode | int, String, String | – | – | Initialisiert jeden festen Enum-Wert. |
-| fromNumber(int) | public static | – | Optional<Color> | number | int | passende Farbe oder leer | Optional<Color> | Ordnet 1 bis 6 zu; andere Werte sind keine Spielfarbe. |
-| getNumber() | public | – | int | – | – | Eingabenummer | int | Liefert die Nummer ohne sie zu verändern. |
-| getDisplayName() | public | – | String | – | – | Anzeigename | String | Liefert den lesbaren deutschen Namen. |
-| getAnsiCode() | public | – | String | – | – | ANSI-Sequenz | String | Liefert nur die Darstellungssequenz, keine Spiellogik. |
+| fromNumber(int) | public static | – | Color | number | int | passende Farbe | Color | Ordnet 0 bis 5 zu; andere Werte führen zu `IllegalArgumentException`. |
+| number() | public | – | int | – | – | Eingabenummer | int | Liefert die Nummer ohne sie zu verändern. |
+| displayName() | public | – | String | – | – | Anzeigename | String | Liefert den lesbaren deutschen Namen. |
+| ansiCode() | public | – | String | – | – | ANSI-Sequenz | String | Liefert nur die Darstellungssequenz, keine Spiellogik. |
 
 ### 4.2 GameStatus
 
@@ -124,7 +124,7 @@ Die Klasse erhält Ein- und Ausgabe im Konstruktor. Dadurch kann die produktive 
 | showLegend() | private | – | void | – | – | – | – | Gibt Nummer, Namen und Farbdarstellung aller Color-Werte aus. |
 | showTurnResult(TurnResult) | private | – | void | result | TurnResult | – | – | Zeigt Versuch, formatierten Tipp und beide Markenzahlen. |
 | showEndMessage(Game) | private | – | void | game | Game | – | – | Zeigt abhängig von WON oder LOST die Endmeldung und den Geheimcode. |
-| formatColor(Color) | private | – | String | color | Color | formatierter Farbname | String | Ruft Ansi.colour(color.getAnsiCode(), color.getDisplayName()) auf. |
+| formatColor(Color) | private | – | String | color | Color | formatierter Farbname | String | Ruft Ansi.colour(color.ansiCode(), color.displayName()) auf. |
 | formatColors(Color[]) | private | – | String | code | Color[] | formatierter Code | String | Liest die vier Positionen in Reihenfolge und verbindet deren formatierte Namen. |
 
 ### 5.3 Ansi
@@ -136,13 +136,6 @@ Ansi steuert keine Terminalfähigkeit und führt keinen Schalter für farbfreie 
 | Name | Sichtbarkeit | Andere Attribute | Typ | Input | Input-Typ | Output | Output-Typ | Präzise Aufgabe |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | RESET | public | static final | String | – | – | – | – | ANSI-Sequenz zum Zurücksetzen aller Darstellungsattribute. |
-| RED | public | static final | String | – | – | – | – | ANSI-Vordergrundfarbe Rot. |
-| GREEN | public | static final | String | – | – | – | – | ANSI-Vordergrundfarbe Grün. |
-| YELLOW | public | static final | String | – | – | – | – | ANSI-Vordergrundfarbe Gelb. |
-| BLUE | public | static final | String | – | – | – | – | ANSI-Vordergrundfarbe Blau. |
-| MAGENTA | public | static final | String | – | – | – | – | ANSI-Vordergrundfarbe Magenta für Violett. |
-| CYAN | public | static final | String | – | – | – | – | Vollständige Standardpalette; in dieser Spielversion keiner Spielfarbe zugeordnet. |
-| BOLD | public | static final | String | – | – | – | – | Optionale Hervorhebung für Text, nie alleiniger Informationsträger. |
 | Ansi() | private | – | Konstruktor | – | – | – | – | Verhindert Instanzen einer reinen Hilfsklasse. |
 | colour(String, String) | public | static | String | colour, text | String, String | umschlossener Text | String | Prüft beide Eingaben auf nicht null und liefert colour + text + RESET. |
 
@@ -240,7 +233,9 @@ Main verdrahtet die konkreten Klassen. ConsoleUI erstellt und bedient Game, verw
 
 ## 7. Fehlerbehandlung und Zustandsgrenzen
 
-Eingabefehler des Spielers sind erwartete Bedienfälle. ConsoleUI behandelt leere Eingaben, Text statt Zahl, Dezimalzahlen, falsche Anzahl Werte und Zahlen ausserhalb von 1 bis 6 mit einer konkreten Meldung. Diese Fälle rufen submitGuess nicht auf und verändern weder attemptsUsed noch Historie noch GameStatus.
+Eingabefehler des Spielers sind erwartete Bedienfälle. ConsoleUI behandelt leere Eingaben, Text statt Zahl, Dezimalzahlen, falsche Anzahl Werte und Zahlen ausserhalb von 0 bis 5 mit einer konkreten Meldung. Diese Fälle rufen submitGuess nicht auf und verändern weder attemptsUsed noch Historie noch GameStatus.
+
+Die Anwendung verwendet für die Farbzuordnung kein `Optional`. `Color.fromNumber(int)` liefert für `0` bis `5` einen gültigen `Color`-Wert und wirft für jeden anderen Wert `IllegalArgumentException`. ConsoleUI fängt diese erwartete Ausnahme bei der Texteingabe ab, schreibt eine deutsche Bereichsmeldung und fordert erneut eine Eingabe an. Die Ausnahme ist damit die technische Fehlergrenze; sie wird nicht als Stacktrace an den Spieler weitergegeben.
 
 Fehlerhafte Aufrufe innerhalb des Programms sind davon getrennt. Game und FeedbackEvaluator weisen Arrays mit falscher Länge oder null-Elementen mit IllegalArgumentException ab. Game weist einen Tipp nach WON oder LOST mit IllegalStateException ab. Diese Fehler zeigen Programmierfehler früh an, statt einen ungültigen Spielzustand zu speichern.
 
@@ -265,7 +260,7 @@ Alle Produktionsdateien liegen im gleichen Paket unter src/main/java/<package>/;
 
 | Testdatei | Prüft | Wichtige Fälle |
 | --- | --- | --- |
-| ColorTest.java | Color | Nummern 1 bis 6, ungültige Nummern, Namen und Sequenzzuordnung. |
+| ColorTest.java | Color | Nummern 0 bis 5, ungültige Nummern, Namen und Sequenzzuordnung. |
 | AnsiTest.java | Ansi | Zusammensetzen von Farbsequenz, Text und genau einem RESET; null-Argumente. |
 | CodeGeneratorTest.java | CodeGenerator | Länge vier, bekannte Farben, reproduzierbarer Zufall. |
 | FeedbackEvaluatorTest.java | FeedbackEvaluator | Volltreffer, Vertauschung, keine Treffer, schwarze vor weissen Marken, Duplikate. |
@@ -289,7 +284,7 @@ Unit-Tests verwenden bekannte Color-Arrays und kontrollierte Zufallsquellen; sie
 
 | Bereich | Testfall | Erwartung |
 | --- | --- | --- |
-| Color | Gültige und ungültige Nummer | 1 bis 6 liefern den passenden Enum-Wert; andere Werte liefern ein leeres Optional. |
+| Color | Gültige und ungültige Nummer | 0 bis 5 liefern den passenden Enum-Wert; andere Werte lösen `IllegalArgumentException` aus. |
 | Ansi | Farbigen Text umschliessen | colour liefert Farbsequenz, Text und abschliessendes RESET. |
 | CodeGenerator | Gültiger Code | Jeder neue Code hat vier nicht null Farben aus Color.values(). |
 | FeedbackEvaluator | Exakter Code | 4 schwarz und 0 weiss. |
@@ -301,8 +296,8 @@ Unit-Tests verwenden bekannte Color-Arrays und kontrollierte Zufallsquellen; sie
 | Game | Defensive Kopien | Änderungen an Eingabe- oder Rückgabe-Arrays verändern keine gespeicherten Daten. |
 | ConsoleUI | Ungültige Eingabe | Meldung erscheint; der nächste gültige Tipp bleibt Versuch 1. |
 
-Manuell wird die Anwendung im vorgesehenen Terminal getestet: leere Zeile, Text, drei oder fünf Zahlen, 0, 7 und Dezimalzahlen; Sieg im ersten und siebten Versuch; sieben falsche Tipps; j, J, n, N und ungültige Neustartantwort; neue Runde mit zurückgesetzter Historie; farbige Legende, Tipps, Gewinn, Verlust und Rückmeldung. Dabei wird kontrolliert, dass jede Aussage auch ohne Farbe durch Text und Zahlen verständlich bleibt.
+Manuell wird die Anwendung im vorgesehenen Terminal getestet: leere Zeile, Text, drei oder fünf Zahlen, -1, 6 und Dezimalzahlen; Sieg im ersten und siebten Versuch; sieben falsche Tipps; j, J, n, N und ungültige Neustartantwort; neue Runde mit zurückgesetzter Historie; farbige Legende, Tipps, Gewinn, Verlust und Rückmeldung. Dabei wird kontrolliert, dass jede Aussage auch ohne Farbe durch Text und Zahlen verständlich bleibt.
 
 ## 11. README
 
-Die README dokumentiert die tatsächlich umgesetzte Anwendung: benötigtes JDK, Kompilier- und Startbefehl, Farblegende, Eingabeformat, Bedeutung schwarzer und weisser Marken sowie die Ausführung der Tests in IntelliJ. Sie weist darauf hin, dass ANSI-Farben in einer ANSI-fähigen Konsole am besten dargestellt werden. Dokumentiert werden nur vorhandene Klassen, Befehle und Funktionen.
+Die README dokumentiert die tatsächlich umgesetzte Anwendung: benötigtes JDK, Kompilier- und Startbefehl, Farblegende, Eingabeformat, Bedeutung schwarzer und weisser Marken sowie die Ausführung der Tests in IntelliJ. Sie weist darauf hin, dass ANSI-Farben in einer ANSI-fähigen Konsole am besten dargestellt werden. Dokumentiert werden nur vorhandene Klassen, Befehle und Funktionen. Solange eine README noch fehlt, bleibt dieser Abschnitt eine Anforderung an den Abschluss und keine Behauptung über eine vorhandene Datei.
