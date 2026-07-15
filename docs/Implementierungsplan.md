@@ -1,14 +1,14 @@
 # Implementierungsplan – Mastermind
 
-> **Planungshinweis für das gesamte Dokument:** Dieser Plan ist ein fortlaufend gepflegtes Designdokument für die vorgesehene Implementierung. Klassennamen, Verantwortlichkeiten, Datenflüsse und Spielregeln sind verbindliche Leitplanken. Einzelne Sichtbarkeiten, Hilfsmethoden, Parameter oder Rückgabetypen werden während der Umsetzung angepasst, wenn der tatsächliche Code, Tests oder eine einfachere Lösung dies fachlich begründen. Nach jeder solchen Änderung wird der betroffene Abschnitt dieses Dokuments nachgeführt; der tatsächlich implementierte und getestete Code bleibt massgebend.
+> **Dokumentationshinweis:** Dieses Dokument beschreibt die implementierte Architektur. Klassennamen, Verantwortlichkeiten, Datenflüsse und Spielregeln entsprechen dem aktuellen Quellcode. Bei späteren Änderungen werden Code, Tests und der betroffene Abschnitt dieses Dokuments gemeinsam nachgeführt.
 
 ## 1. Ziel, Umfang und technische Leitlinien
 
-Dieses Dokument plant ein Mastermind-Spiel als Java-Kommandozeilenprogramm. Das Programm erzeugt pro Runde einen geheimen, geordneten Code aus genau vier Farben. Die sechs zugelassenen Farben sind Rot, Grün, Blau, Gelb, Orange und Violett. Jede Farbe darf im Geheimcode und im Tipp mehrfach vorkommen. Der Spieler verfügt über höchstens sieben gültige Tipps. Nach jedem Tipp meldet das Programm die Zahl schwarzer Marken für richtige Farbe an richtiger Position sowie weisser Marken für richtige Farbe an falscher Position.
+Dieses Dokument beschreibt ein Mastermind-Spiel mit Konsolenmodus und optionaler Swing-GUI. Das Programm erzeugt pro Runde einen geheimen, geordneten Code aus genau vier Farben. Die sechs zugelassenen Farben sind Rot, Grün, Blau, Gelb, Orange und Violett. Jede Farbe darf im Geheimcode und im Tipp mehrfach vorkommen. Der Spieler verfügt über höchstens sieben gültige Tipps. Nach jedem Tipp meldet das Programm die Zahl schwarzer Marken für richtige Farbe an richtiger Position sowie weisser Marken für richtige Farbe an falscher Position.
 
-Die Anwendung verwendet ausschliesslich das JDK. Sie benötigt keine externe Bibliothek, keinen Build-Manager und keine Konfigurationsdatei. ANSI-Escape-Sequenzen sorgen in einem geeigneten Terminal für Farbe, sind aber ausschliesslich Darstellung: Alle Informationen bleiben zusätzlich durch deutsche Texte, Zahlen und Symbole verständlich. Der vorhandene Quellcode ist ein Rohbau; noch nicht implementierte Klassen- und Methodenverträge in diesem Plan bleiben deshalb als Zielarchitektur dokumentiert. Die gegenwärtige `Color`-Datei importiert noch `org.jetbrains.annotations.NotNull`; dieser Import wird vor dem verbindlichen JDK-Kompilierweg entfernt oder die Bibliothek bewusst eingerichtet und dokumentiert.
+Die Produktionsanwendung verwendet Java 21 als Zielversion und wird mit dem versionierten Maven Wrapper gebaut. JUnit 5 ist ausschliesslich eine Testabhängigkeit. ANSI-Escape-Sequenzen sorgen in einem geeigneten Terminal für Farbe, sind aber ausschliesslich Darstellung: Alle Informationen bleiben zusätzlich durch deutsche Texte, Zahlen und Symbole verständlich. Die farbige Ausgabe ist standardmässig aktiv und kann mit `--no-color` oder einer nicht leeren Umgebungsvariable `NO_COLOR` deaktiviert werden.
 
-Die Architektur bleibt bewusst klein. Konkrete Klassen statt abstrakter Frameworks trennen Konsolenein- und -ausgabe von Spielzustand, Zufallscode und Rückmeldealgorithmus. So ist die Fachlogik isoliert testbar, ohne eine nicht benötigte Erweiterungsinfrastruktur einzuführen.
+Die Architektur bleibt bewusst klein. Konkrete Klassen trennen Konsolen- und Swing-Darstellung von Spielzustand, Zufallscode und Rückmeldealgorithmus. `GameSession` verwaltet den Rundenwechsel für beide Oberflächen. Swing gehört zu JDK 21, daher ist keine zusätzliche Abhängigkeit nötig.
 
 ## 2. Bedienung und Ablauf einer Runde
 
@@ -22,14 +22,14 @@ Gib vier Farbnummern ein, zum Beispiel: 0 3 3 5
 
 Der Ablauf einer Runde ist genau festgelegt:
 
-1. Die Konsole erstellt eine neue Game-Instanz. Diese erzeugt einen geheimen Code und startet im Zustand ONGOING.
+1. GameSession erzeugt beim Start und bei jedem Neustart eine neue Game-Instanz. Diese erzeugt einen geheimen Code und startet im Zustand ONGOING.
 2. Die Konsole zeigt Versuch x von 7 und fordert eine Eingabe an.
 3. Eine Eingabe ist nur gültig, wenn sie genau vier ganze Zahlen von 0 bis 5 enthält. Jede Nummer wird in einen Color-Wert übersetzt.
 4. Game verarbeitet den gültigen Tipp, speichert ihn in der Historie und erzeugt ein TurnResult.
 5. Die Konsole zeigt den Tipp farbig sowie Schwarz: x und Weiss: y. Sie zeigt keine Zuordnung von Marken zu Positionen.
 6. Bei vier schwarzen Marken erhält die Runde den Zustand WON. Nach dem siebten nicht gewinnenden gültigen Tipp erhält sie LOST.
 7. Im Endzustand zeigt die Konsole den Geheimcode und fragt Neue Runde? (j/n).
-8. j oder J startet mit einer neuen Game-Instanz; n oder N beendet die Anwendung. Jede andere Antwort wird erneut abgefragt.
+8. j oder J ruft GameSession.startNewRound() auf; n oder N beendet die Anwendung. Jede andere Antwort wird erneut abgefragt.
 
 Endet die Eingabequelle, etwa bei einem automatisierten Konsolentest, beendet die Anwendung kontrolliert. Sie darf weder eine Endlosschleife noch eine unbehandelte Eingabeausnahme erzeugen.
 
@@ -96,16 +96,18 @@ GameStatus besitzt für die Pflichtversion keine eigenen Attribute oder Methoden
 
 ### 5.1 Main
 
-Main ist eine konkrete, finale Java-Klasse mit privatem Konstruktor. Sie ist kein Interface und besitzt keinen Spielzustand. Ihre einzige Aufgabe besteht darin, die Abhängigkeiten der Anwendung an einem sichtbaren Ort zu erstellen und den Konsolenablauf zu starten. Main enthält ausdrücklich keine Spielregel, Eingabeprüfung oder ANSI-Formatierung.
+Main ist eine konkrete, finale Java-Klasse mit privatem Konstruktor. Sie ist kein Interface und besitzt keinen Spielzustand. Sie erstellt die gemeinsamen Abhängigkeiten, bestimmt mit `--gui` den Modus und startet entweder die Konsole oder Swing auf dem Event-Dispatch-Thread. Main enthält keine Spielregel, Eingabeprüfung oder ANSI-Formatierung.
 
 | Name | Sichtbarkeit | Andere Attribute | Typ | Input | Input-Typ | Output | Output-Typ | Präzise Aufgabe |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Main() | private | – | Konstruktor | – | – | – | – | Verhindert die Instanziierung der reinen Startklasse. |
-| main(String[] args) | public | static | void | args | String[] | – | – | Erstellt Random, CodeGenerator, FeedbackEvaluator, Scanner, PrintStream und ConsoleUI. Ruft anschliessend genau consoleUI.run() auf. args wird nicht ausgewertet. |
+| main(String[] args) | public | static | void | args | String[] | – | – | Erstellt Random, CodeGenerator, FeedbackEvaluator und GameSession. Startet bei `--gui` MastermindFrame auf dem Event-Dispatch-Thread, sonst ConsoleUI. |
+| shouldUseGui(String[]) | package-private | static | boolean | args | String[] | GUI-Modus | boolean | Liefert true, wenn die Argumente exakt `--gui` enthalten. |
+| shouldUseAnsiColours(String[], String) | package-private | static | boolean | args, noColor | String[], String | Farbmodus | boolean | Liefert false, wenn `--no-color` übergeben wurde oder `NO_COLOR` nicht leer ist; sonst true. |
 
 ### 5.2 ConsoleUI
 
-ConsoleUI ist eine konkrete Java-Klasse für die gesamte Benutzerschnittstelle. Sie ist weder eine Fachlogikklasse noch ein Interface. Sie liest Textzeilen, prüft das Eingabeformat, erstellt Runden, ruft Game auf und schreibt verständliche Ausgaben. Sie darf nie selbst schwarze oder weisse Marken berechnen und verändert nie Felder von Game direkt.
+ConsoleUI ist eine konkrete Java-Klasse für den Konsolenmodus. Sie ist weder eine Fachlogikklasse noch ein Interface. Sie liest Textzeilen, prüft das Eingabeformat, bedient GameSession und schreibt verständliche Ausgaben. Sie darf nie selbst schwarze oder weisse Marken berechnen.
 
 Die Klasse erhält Ein- und Ausgabe im Konstruktor. Dadurch kann die produktive Anwendung System.in und System.out verwenden, während Tests ByteArrayInputStream und ByteArrayOutputStream einsetzen. Sie schliesst den Scanner nicht, weil ein an System.in gebundener Eingabestrom bis zum Programmende offen bleiben soll.
 
@@ -113,25 +115,24 @@ Die Klasse erhält Ein- und Ausgabe im Konstruktor. Dadurch kann die produktive 
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | scanner | private | final | Scanner | – | – | – | – | Liest vollständige Eingabezeilen. |
 | out | private | final | PrintStream | – | – | – | – | Schreibt alle sichtbaren Meldungen und erlaubt testbare Ausgabe. |
-| codeGenerator | private | final | CodeGenerator | – | – | – | – | Wird bei jeder neuen Runde an Game übergeben. |
-| feedbackEvaluator | private | final | FeedbackEvaluator | – | – | – | – | Wird bei jeder neuen Runde an Game übergeben, nicht direkt zur Berechnung genutzt. |
-| ConsoleUI(Scanner, PrintStream, CodeGenerator, FeedbackEvaluator) | public | – | Konstruktor | scanner, out, codeGenerator, feedbackEvaluator | Scanner, PrintStream, CodeGenerator, FeedbackEvaluator | – | – | Übernimmt alle Abhängigkeiten und weist null-Werte sofort zurück. |
+| gameSession | private | final | GameSession | – | – | – | – | Verwaltet die aktuelle Runde und erzeugt beim Neustart die nächste. |
+| useAnsiColours | private | final | boolean | – | – | – | – | Steuert, ob Farbnamen mit ANSI-Sequenzen oder als reiner Text ausgegeben werden. |
+| ConsoleUI(Scanner, PrintStream, GameSession, boolean) | public | – | Konstruktor | scanner, out, gameSession, useAnsiColours | Scanner, PrintStream, GameSession, boolean | – | – | Übernimmt alle Abhängigkeiten, weist null-Werte sofort zurück und speichert den Farbmodus. |
 | run() | public | – | void | – | – | – | – | Zeigt Begrüssung und Legende, startet Runden und endet bei n/N oder Eingabeende. |
-| createGame() | private | – | Game | – | – | neue Runde | Game | Erstellt eine neue Game-Instanz aus Generator und Evaluator. |
-| playRound(Game) | private | – | boolean | game | Game | Eingabe fortsetzen | boolean | Verarbeitet Tipps bis WON oder LOST; gibt false zurück, wenn die Eingabequelle endet. |
+| playRound() | private | – | boolean | – | – | Eingabe fortsetzen | boolean | Verarbeitet Tipps über GameSession bis WON oder LOST; gibt false zurück, wenn die Eingabequelle endet. |
 | readGuess() | private | – | Color[] | – | – | gültiger Tipp oder leer | Color[] oder null | Prüft Zeile, Anzahl, Zahlen und Bereich. null ist ausschliesslich das kontrollierte Abbruchsignal bei Eingabeende. |
 | readRestartChoice() | private | – | boolean | – | – | neue Runde ja/nein | boolean | Akzeptiert nur j/J oder n/N und fragt andere Eingaben erneut ab. |
 | showLegend() | private | – | void | – | – | – | – | Gibt Nummer, Namen und Farbdarstellung aller Color-Werte aus. |
 | showTurnResult(TurnResult) | private | – | void | result | TurnResult | – | – | Zeigt Versuch, formatierten Tipp und beide Markenzahlen. |
-| showEndMessage(Game) | private | – | void | game | Game | – | – | Zeigt abhängig von WON oder LOST die Endmeldung und den Geheimcode. |
-| formatColor(Color) | private | – | String | color | Color | formatierter Farbname | String | Ruft Ansi.colour(color.ansiCode(), color.displayName()) auf. |
+| showEndMessage() | private | – | void | – | – | – | Zeigt abhängig von WON oder LOST die Endmeldung und den durch GameSession freigegebenen Geheimcode. |
+| formatColor(Color) | private | – | String | color | Color | formatierter Farbname | String | Liefert bei aktivem Farbmodus Ansi.colour(color.ansiCode(), color.displayName()), sonst nur color.displayName(). |
 | formatColors(Color[]) | private | – | String | code | Color[] | formatierter Code | String | Liest die vier Positionen in Reihenfolge und verbindet deren formatierte Namen. |
 
 ### 5.3 Ansi
 
 Ansi ist eine konkrete, finale Java-Hilfsklasse mit privatem Konstruktor. Sie ist kein Interface und enthält keinerlei Spielzustand oder Spielregel. Sie definiert die technischen ANSI-SGR-Sequenzen nur einmal und stellt eine sichere Methode bereit, die nach jedem farbigen Text RESET anhängt. So kann keine Ausgabe versehentlich weitergefärbt bleiben.
 
-Ansi steuert keine Terminalfähigkeit und führt keinen Schalter für farbfreie Ausgabe ein. Die Pflichtversion verwendet die klassische ANSI-Palette direkt. Falls ein Terminal ANSI nicht interpretiert, bleiben die deutschen Texte dennoch verständlich, obwohl Steuerzeichen sichtbar werden können.
+Ansi steuert keine Terminalfähigkeit. Der Schalter für farbfreie Ausgabe liegt in Main und ConsoleUI. Die Pflichtversion verwendet die klassische ANSI-Palette direkt. Falls ein Terminal ANSI nicht interpretiert, bleiben die deutschen Texte dennoch verständlich, und der Benutzer kann die Steuerzeichen mit `--no-color` oder `NO_COLOR` vermeiden.
 
 | Name | Sichtbarkeit | Andere Attribute | Typ | Input | Input-Typ | Output | Output-Typ | Präzise Aufgabe |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -177,7 +178,16 @@ Der produktive Konstruktor erhält CodeGenerator und FeedbackEvaluator. Der Test
 | getFeedbackHistory() | public | – | Feedback[] | – | – | Historienkopie | Feedback[] | Liefert eine Kopie der Referenzen auf unveränderliche Feedback-Werte. |
 | validateCode(Color[], String) | private | static | void | code, context | Color[], String | – | – | Prüft Länge und null-Werte und erzeugt bei Fehlern eine klare IllegalArgumentException. |
 
-### 5.6 FeedbackEvaluator
+### 5.6 CodeValidator
+
+CodeValidator ist eine package-private, finale Hilfsklasse. Sie bündelt die Prüfung von Farbcode-Arrays, damit Game und FeedbackEvaluator dieselbe Fehlergrenze verwenden. Die Klasse erzeugt keine Spielobjekte und besitzt keinen Zustand.
+
+| Name | Sichtbarkeit | Andere Attribute | Typ | Input | Input-Typ | Output | Output-Typ | Präzise Aufgabe |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| CodeValidator() | private | – | Konstruktor | – | – | – | – | Verhindert Instanzen einer reinen Hilfsklasse. |
+| validateCode(Color[], String) | package-private | static | void | code, context | Color[], String | – | – | Prüft Länge und null-Werte und erzeugt bei Fehlern eine klare IllegalArgumentException. |
+
+### 5.7 FeedbackEvaluator
 
 FeedbackEvaluator ist eine konkrete, zustandslose Java-Klasse für genau eine fachliche Aufgabe: die Berechnung schwarzer und weisser Marken. Sie ist kein Interface und kennt weder ConsoleUI noch GameStatus noch Historie. Dadurch lässt sie sich mit bekannten Arrays unabhängig und deterministisch testen.
 
@@ -189,7 +199,7 @@ evaluate prüft zuerst beide Codes. Im ersten Durchlauf zählt sie schwarze Mark
 | evaluate(Color[], Color[]) | public | – | Feedback | secret, guess | Color[], Color[] | Markenergebnis | Feedback | Berechnet zuerst schwarze und danach weisse Marken ohne Positionszuordnung. |
 | validateCode(Color[], String) | private | static | void | code, context | Color[], String | – | – | Prüft Codelänge und nicht null Elemente vor jeder Auswertung. |
 
-### 5.7 Feedback
+### 5.8 Feedback
 
 Feedback ist eine konkrete, unveränderliche Java-Wertklasse. Sie ist kein Interface und enthält nur das Ergebnis einer Rückmeldeberechnung. Ein Feedback-Objekt wird nach der Erstellung nicht verändert und kann deshalb sicher in Historien gespeichert sowie von TurnResult weitergegeben werden.
 
@@ -201,7 +211,7 @@ Feedback ist eine konkrete, unveränderliche Java-Wertklasse. Sie ist kein Inter
 | getBlackMarks() | public | – | int | – | – | schwarze Marken | int | Liefert die unveränderliche schwarze Anzahl. |
 | getWhiteMarks() | public | – | int | – | – | weisse Marken | int | Liefert die unveränderliche weisse Anzahl. |
 
-### 5.8 TurnResult
+### 5.9 TurnResult
 
 TurnResult ist eine konkrete, unveränderliche Java-Wertklasse für das Ergebnis eines erfolgreich verarbeiteten Tipps. Sie ist kein Interface und enthält keinen eigenen Spielzustand. Game erstellt ein TurnResult erst, nachdem Tipp, Feedback, Versuchszahl und neuer Status feststehen. ConsoleUI erhält damit alle Informationen eines Zuges zusammenhängend, ohne mehrfach den Zustand von Game abfragen zu müssen.
 
@@ -219,17 +229,17 @@ TurnResult ist eine konkrete, unveränderliche Java-Wertklasse für das Ergebnis
 
 ## 6. Abhängigkeiten und Objektfluss
 
-Die Abhängigkeiten verlaufen von der Darstellung zur Fachlogik; keine Fachklasse hängt von Scanner, PrintStream oder ANSI-Ausgabe ab.
+Die Abhängigkeiten verlaufen von der Darstellung zur Fachlogik; keine Fachklasse hängt von Scanner, PrintStream, ANSI oder Swing ab.
 
 ~~~text
-Main → ConsoleUI → Game → CodeGenerator
-                    └──→ FeedbackEvaluator → Feedback
-ConsoleUI ← TurnResult ← Game
-ConsoleUI → Color → Ansi
-ConsoleUI → Ansi
+Main → GameSession → Game → CodeGenerator
+  ├──→ ConsoleUI → Color → Ansi
+  └──→ MastermindFrame → MastermindPanel → PegView / FeedbackView
+GameSession → FeedbackEvaluator → Feedback
+ConsoleUI / MastermindPanel ← TurnResult ← Game
 ~~~
 
-Main verdrahtet die konkreten Klassen. ConsoleUI erstellt und bedient Game, verwendet Color zur Eingabeumrechnung und Ansi nur für Texte. Game verwendet CodeGenerator und FeedbackEvaluator. FeedbackEvaluator liefert Feedback, während TurnResult eine bereits abgeschlossene einzelne Tippverarbeitung transportiert. Diese Richtung verhindert, dass Regeln an die Konsole gekoppelt werden.
+Main verdrahtet die konkreten Klassen. GameSession erstellt und bedient Game. ConsoleUI verwendet Color zur Eingabeumrechnung und Ansi nur für Texte; MastermindPanel erzeugt gültige Color-Arrays nur über Farbbuttons. FeedbackEvaluator liefert Feedback, während TurnResult eine abgeschlossene einzelne Tippverarbeitung transportiert. Diese Richtung verhindert, dass Regeln an eine Oberfläche gekoppelt werden.
 
 ## 7. Fehlerbehandlung und Zustandsgrenzen
 
@@ -241,42 +251,52 @@ Fehlerhafte Aufrufe innerhalb des Programms sind davon getrennt. Game und Feedba
 
 Der Geheimcode wird während ONGOING nie ausgegeben. Nach WON oder LOST wird kein weiterer Tipp angenommen. Eine neue Runde bedeutet stets eine neue Game-Instanz und damit einen vollständig neuen Geheimcode, Zähler, Status und Historie.
 
-## 8. Geplante Code- und Testdateien
+## 8. Code- und Testdateien
 
-Alle Produktionsdateien liegen im gleichen Paket unter src/main/java/<package>/; die zugehörigen JUnit-Dateien liegen mit gleichem package-Statement unter src/test/java/<package>/. Es sind keine Ressourcen- oder Konfigurationsdateien vorgesehen.
+Die Fachklassen liegen im Package `ch.valentindibbern.mastermind` unter `src/main/java/ch/valentindibbern/mastermind/`. Die JUnit-Tests spiegeln dieses Package unter `src/test/java/ch/valentindibbern/mastermind/`. Der Maven Wrapper ist der verbindliche Build- und Testweg. `.\mvnw.cmd package` erzeugt das ausführbare, versionslose JAR `target/mastermind.jar`; sein Manifest verweist auf `ch.valentindibbern.mastermind.Main`.
 
 | Produktionsdatei | Enthält | Verantwortlichkeit |
 | --- | --- | --- |
 | Main.java | finale Klasse Main | Startet die Anwendung und verdrahtet Abhängigkeiten. |
+| GameSession.java | finale Klasse GameSession | Verwaltet die aktuelle Runde und erzeugt neue Runden für beide Oberflächen. |
 | Color.java | Enum Color | Definiert die sechs Spielfarben und ihre Darstellungseigenschaften. |
 | GameStatus.java | Enum GameStatus | Definiert ONGOING, WON und LOST. |
 | Ansi.java | finale Klasse Ansi | Zentralisiert ANSI-Sequenzen und colour. |
 | CodeGenerator.java | Klasse CodeGenerator | Erzeugt zufällige Geheimcodes. |
+| CodeValidator.java | finale Hilfsklasse CodeValidator | Prüft Farbcode-Arrays zentral für Game und FeedbackEvaluator. |
 | FeedbackEvaluator.java | Klasse FeedbackEvaluator | Berechnet schwarze und weisse Marken. |
 | Feedback.java | unveränderliche Klasse Feedback | Speichert die beiden Markenzahlen. |
 | TurnResult.java | unveränderliche Klasse TurnResult | Transportiert das Ergebnis eines Tipps. |
 | Game.java | Klasse Game | Besitzt und verarbeitet genau eine Spielrunde. |
 | ConsoleUI.java | Klasse ConsoleUI | Liest, validiert und zeigt den Konsolenablauf. |
+| MastermindFrame.java | finale Klasse MastermindFrame | Swing-Fenster und Enddialog. |
+| MastermindPanel.java | Klasse MastermindPanel | Klassisches Spielbrett, Farbwahl und Zugdarstellung. |
+| PegView.java / FeedbackView.java | Swing-Komponenten | Zeichnen Farb- und Rückmeldesteine ohne Bilddateien. |
 
 | Testdatei | Prüft | Wichtige Fälle |
 | --- | --- | --- |
 | ColorTest.java | Color | Nummern 0 bis 5, ungültige Nummern, Namen und Sequenzzuordnung. |
 | AnsiTest.java | Ansi | Zusammensetzen von Farbsequenz, Text und genau einem RESET; null-Argumente. |
+| FeedbackTest.java | Feedback | Gültige und ungültige Markenkombinationen. |
+| TurnResultTest.java | TurnResult | Defensives Kopieren und ungültige Zugdaten. |
 | CodeGeneratorTest.java | CodeGenerator | Länge vier, bekannte Farben, reproduzierbarer Zufall. |
 | FeedbackEvaluatorTest.java | FeedbackEvaluator | Volltreffer, Vertauschung, keine Treffer, schwarze vor weissen Marken, Duplikate. |
 | GameTest.java | Game | Anfangszustand, Sieg, siebte Niederlage, Historie, Kopien und abgelehnte Tipps. |
-| ConsoleUITest.java | ConsoleUI | Ungültige Eingaben zählen nicht, Neustart, kontrolliertes Eingabeende und erzeugte ANSI-Zeichenketten. |
+| ConsoleUITest.java | ConsoleUI | Ungültige Eingaben zählen nicht, Neustart, kontrolliertes Eingabeende sowie farbige und farblose Ausgabe. |
+| GameSessionTest.java | GameSession | Rundenstart, Ende, verdeckter Geheimcode und defensives Kopieren. |
+| MastermindPanelTest.java | GUI-Bedienung | Auswahl, Löschen, Rückmeldung, Rundenende und Neustart auf dem Event-Dispatch-Thread. |
+| MainTest.java | Main | GUI-Flag sowie Farbmodus aus `--no-color` und `NO_COLOR`. |
 
 ## 9. Umsetzungsreihenfolge
 
-1. Paketstruktur und die einfachen Werttypen Ansi, Color, GameStatus, Feedback und TurnResult anlegen.
-2. FeedbackEvaluator mit dem zweiphasigen Algorithmus implementieren und dessen Tests zuerst ausführen.
-3. CodeGenerator mit injizierbarem Random implementieren und auf Form des Codes testen.
-4. Game mit defensiven Kopien, Historie, Statuswechseln und beiden Konstruktoren implementieren.
-5. ConsoleUI mit injizierbarer Ein- und Ausgabe, Validierung, Rundenablauf und Neustartfrage implementieren.
-6. ANSI-Darstellung ausschliesslich über Ansi.colour in ConsoleUI hinzufügen und im Zielterminal prüfen.
-7. Main verdrahten und vollständige Spielrunden manuell ausführen.
-8. Alle JUnit-Tests und die manuellen Konsolenszenarien erneut ausführen; Fehler zuerst in Fachlogik, danach in Darstellung korrigieren.
+1. Einfache Werttypen und Enums korrigieren sowie die Java-21- und Maven-Wrapper-Konfiguration sicherstellen.
+2. FeedbackEvaluator mit dem zweiphasigen Algorithmus und zugehörigen Duplikattests umsetzen.
+3. CodeGenerator mit injizierbarem Random und deterministischen Tests umsetzen.
+4. Game mit defensiven Kopien, siebenzeiliger Historie, Statuswechseln und beiden Konstruktoren umsetzen.
+5. ConsoleUI mit injizierbarer Ein- und Ausgabe, Validierung, Rundenablauf und Neustartfrage umsetzen.
+6. ANSI-Darstellung ausschliesslich über Ansi.colour in ConsoleUI verwenden.
+7. Main mit klassischer `public static void main(String[] args)` verdrahten.
+8. Alle JUnit-Tests mit `.\mvnw.cmd test` sowie die manuellen Konsolenszenarien mit Java 21 oder neuer ausführen.
 
 ## 10. Testkonzept
 
@@ -300,4 +320,12 @@ Manuell wird die Anwendung im vorgesehenen Terminal getestet: leere Zeile, Text,
 
 ## 11. README
 
-Die README dokumentiert die tatsächlich umgesetzte Anwendung: benötigtes JDK, Kompilier- und Startbefehl, Farblegende, Eingabeformat, Bedeutung schwarzer und weisser Marken sowie die Ausführung der Tests in IntelliJ. Sie weist darauf hin, dass ANSI-Farben in einer ANSI-fähigen Konsole am besten dargestellt werden. Dokumentiert werden nur vorhandene Klassen, Befehle und Funktionen. Solange eine README noch fehlt, bleibt dieser Abschnitt eine Anforderung an den Abschluss und keine Behauptung über eine vorhandene Datei.
+Die README dokumentiert die umgesetzte Anwendung: benötigtes JDK 21 oder neuer, den Maven-Wrapper-Befehl `.\mvnw.cmd package` sowie die JAR-Aufrufe `java -jar target\mastermind.jar`, `java -jar target\mastermind.jar --gui` und `java -jar target\mastermind.jar --no-color`, Farblegende, Eingabeformat, Bedeutung schwarzer und weisser Marken, farbige beziehungsweise farblose Konsolenausgabe, GUI-Bedienung sowie die Ausführung der Tests mit `.\mvnw.cmd test`.
+
+## 12. Optionaler Swing-GUI-Modus
+
+Das Flag `--gui` startet `MastermindFrame` auf dem Swing-Event-Dispatch-Thread. Ohne Flag bleibt die Konsole der Standardmodus. `--no-color` und `NO_COLOR` haben nur im Konsolenmodus eine Wirkung; Swing verwendet eigene RGB-Farben aus `SwingPalette`.
+
+`MastermindPanel` zeigt den verdeckten Geheimcode, sieben feste Versuchzeilen und pro Zeile vier Tippsteine sowie ein 2×2-Feld für Rückmeldesteine. Die sechs textlich beschrifteten Farbbuttons füllen das lokale `Color[4]` von links nach rechts; Wiederholungen sind erlaubt. `Letzte Farbe löschen` entfernt den letzten Eintrag. `Tipp prüfen` ist nur bei vier gewählten Farben aktiv und übergibt den Tipp an GameSession.
+
+Nach einem Zug zeichnet die GUI schwarze Marken vor weissen Marken, ohne Positionen zuzuordnen. Bei Sieg oder Niederlage deckt sie den Geheimcode auf, sperrt die Eingabe und verwendet einen deutschen Ja/Nein-Dialog. Ja erstellt durch `GameSession.startNewRound()` eine vollständig leere neue Runde, Nein schliesst das Fenster. Die `RoundEndPrompt`-Abstraktion erlaubt es, diese Dialogentscheidung in Tests ohne sichtbares Fenster zu simulieren.

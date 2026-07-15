@@ -1,5 +1,5 @@
-import enums.Color;
-import enums.GameStatus;
+package ch.valentindibbern.mastermind;
+
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

@@ -1,3 +1,5 @@
+package ch.valentindibbern.mastermind;
+
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -9,6 +11,7 @@ import java.util.Scanner;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ConsoleUITest {
@@ -22,6 +25,51 @@ class ConsoleUITest {
         assertTrue(output.contains("Schwarz: 4 | Weiss: 0"));
         assertTrue(output.contains("Gewonnen!"));
         assertTrue(output.contains("\u001B[31mRot\u001B[0m"));
+    }
+
+    @Test
+    void rejectsBlankGuessWithoutUsingAttempt() {
+        String output = run("\n0 1 2 3\nn\n", true, 0, 1, 2, 3);
+
+        assertTrue(output.contains("Ungültige Eingabe: Gib vier Farbnummern ein."));
+        assertEquals(1, occurrences(output, "Versuch 1 von 7:"));
+        assertTrue(output.contains("Gewonnen!"));
+    }
+
+    @Test
+    void rejectsWrongNumberOfValuesWithoutUsingAttempt() {
+        String output = run("0 1 2\n0 1 2 3 4\n0 1 2 3\nn\n", true, 0, 1, 2, 3);
+
+        assertEquals(2, occurrences(output, "Ungültige Eingabe: Es werden genau vier Farbnummern erwartet."));
+        assertEquals(1, occurrences(output, "Versuch 1 von 7:"));
+        assertTrue(output.contains("Gewonnen!"));
+    }
+
+    @Test
+    void rejectsOutOfRangeNumbersWithoutUsingAttempt() {
+        String output = run("-1 1 2 3\n0 1 2 6\n0 1 2 3\nn\n", true, 0, 1, 2, 3);
+
+        assertEquals(2, occurrences(output, "Ungültige Eingabe: Farbnummern müssen zwischen 0 und 5 liegen."));
+        assertEquals(1, occurrences(output, "Versuch 1 von 7:"));
+        assertTrue(output.contains("Gewonnen!"));
+    }
+
+    @Test
+    void rejectsDecimalNumbersWithoutUsingAttempt() {
+        String output = run("0 1 2 3.5\n0 1 2 3\nn\n", true, 0, 1, 2, 3);
+
+        assertTrue(output.contains("Ungültige Eingabe: Verwende ganze Zahlen von 0 bis 5."));
+        assertEquals(1, occurrences(output, "Versuch 1 von 7:"));
+        assertTrue(output.contains("Gewonnen!"));
+    }
+
+    @Test
+    void canDisableAnsiColours() {
+        String output = run("0 1 2 3\nn\n", false, 0, 1, 2, 3);
+
+        assertTrue(output.contains("0 = Rot"));
+        assertTrue(output.contains("Tipp 1: Rot Grün Blau Gelb"));
+        assertFalse(output.contains("\u001B["));
     }
 
     @Test
@@ -55,8 +103,11 @@ class ConsoleUITest {
         ConsoleUI consoleUI = new ConsoleUI(
                 new Scanner(new StringReader("")),
                 new PrintStream(output, true, StandardCharsets.UTF_8),
-                new CodeGenerator(new SequenceRandom(0, 1, 2, 3)),
-                new FeedbackEvaluator()
+                new GameSession(
+                        new CodeGenerator(new SequenceRandom(0, 1, 2, 3)),
+                        new FeedbackEvaluator()
+                ),
+                true
         );
 
         assertDoesNotThrow(consoleUI::run);
@@ -64,12 +115,19 @@ class ConsoleUITest {
     }
 
     private static String run(String input, int... secretNumbers) {
+        return run(input, true, secretNumbers);
+    }
+
+    private static String run(String input, boolean useAnsiColours, int... secretNumbers) {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         ConsoleUI consoleUI = new ConsoleUI(
                 new Scanner(new StringReader(input)),
                 new PrintStream(output, true, StandardCharsets.UTF_8),
-                new CodeGenerator(new SequenceRandom(secretNumbers)),
-                new FeedbackEvaluator()
+                new GameSession(
+                        new CodeGenerator(new SequenceRandom(secretNumbers)),
+                        new FeedbackEvaluator()
+                ),
+                useAnsiColours
         );
 
         consoleUI.run();

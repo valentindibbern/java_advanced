@@ -1,4 +1,5 @@
-import enums.Color;
+package ch.valentindibbern.mastermind;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.Random;

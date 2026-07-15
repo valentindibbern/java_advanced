@@ -1,5 +1,4 @@
-import enums.Color;
-import enums.GameStatus;
+package ch.valentindibbern.mastermind;
 
 import java.util.Arrays;
 import java.util.Objects;

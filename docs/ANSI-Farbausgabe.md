@@ -27,7 +27,7 @@ System.out.println("\u001B[31mRot\u001B[0m");
 
 Das Terminal empfängt ESC, [, 31, m, den Text und anschliessend ESC, [, 0, m. 31 schaltet die Vordergrundfarbe auf Rot; 0 setzt danach alle Darstellungsattribute zurück. Ohne Reset kann die gewählte Farbe in nachfolgende Ausgaben auslaufen.
 
-ANSI-Sequenzen verändern nur die Darstellung im Terminal. Bei einer Umleitung in eine Datei bleiben die Steuerzeichen enthalten. Da dieses Projekt keinen farbfreien Modus implementiert, müssen Ausgaben immer auch ohne Farbe verständlich sein.
+ANSI-Sequenzen verändern nur die Darstellung im Terminal. Bei einer Umleitung in eine Datei bleiben die Steuerzeichen enthalten. Da dieses Projekt einen farbfreien Modus implementiert, können ANSI-Sequenzen bei Bedarf deaktiviert werden. Ausgaben müssen trotzdem immer auch ohne Farbe verständlich sein.
 
 ## Aufbau einer SGR-Sequenz
 
@@ -93,7 +93,7 @@ Für die Entwicklung gelten diese Einstellungen:
 4. Beim direkten Kompilieren wird die Quellcodierung explizit angegeben.
 
 ~~~powershell
-javac -encoding UTF-8 -d out src/main/java/Ansi.java src/main/java/enums/Color.java
+.\mvnw.cmd test
 ~~~
 
 ## Grundlage im Code
@@ -129,16 +129,16 @@ public final class Ansi {
 Die Konsolenausgabe formatiert eine Spielfarbe so:
 
 ~~~java
-String formattedColor = Ansi.colour(color.getAnsiCode(), color.getDisplayName());
+String formattedColor = Ansi.colour(color.ansiCode(), color.displayName());
 ~~~
 
-Ansi enthält absichtlich keine Konstanten wie RED oder GREEN. Diese Sequenzen gehören direkt zu den entsprechenden Color-Werten. Ein Schalter für farbfreie Ausgabe, Terminalerkennung oder weitere ANSI-Stile ist nicht Teil des aktuellen Projektumfangs.
+Ansi enthält absichtlich keine Konstanten wie RED oder GREEN. Diese Sequenzen gehören direkt zu den entsprechenden Color-Werten. Farbige Ausgabe ist standardmässig aktiv und kann mit `--no-color` oder einer nicht leeren Umgebungsvariable `NO_COLOR` deaktiviert werden.
 
 ## Umlaute und UTF-8
 
 Die deutschen Konsolentexte werden mit echten Umlauten geschrieben, beispielsweise Ungültige Eingabe, Grün und verfügbar. ANSI-Farbsequenzen verändern ihre Codierung nicht. Probleme wie falsch dargestelltes Grün entstehen nur, wenn Quelldatei, Java-Prozess und Terminal unterschiedliche Zeichenkodierungen verwenden.
 
-Die verbindliche Kette lautet daher: Dateien in UTF-8 speichern, mit javac -encoding UTF-8 kompilieren und in einem UTF-8-fähigen Terminal ausführen.
+Die verbindliche Kette lautet daher: Dateien in UTF-8 speichern, mit dem Maven Wrapper kompilieren und in einem UTF-8-fähigen Terminal ausführen.
 
 ## Mastermind-Beispiele
 
@@ -147,17 +147,17 @@ Die verbindliche Kette lautet daher: Dateien in UTF-8 speichern, mit javac -enco
 Ein farbiges Zeichen allein ist nicht ausreichend. Ein Name ergänzt die Farbe:
 
 ~~~java
-System.out.println(Ansi.colour(Color.RED.getAnsiCode(), "● Rot"));
-System.out.println(Ansi.colour(Color.GREEN.getAnsiCode(), "● Grün"));
-System.out.println(Ansi.colour(Color.YELLOW.getAnsiCode(), "● Gelb"));
+System.out.println(Ansi.colour(Color.RED.ansiCode(), "● Rot"));
+System.out.println(Ansi.colour(Color.GREEN.ansiCode(), "● Grün"));
+System.out.println(Ansi.colour(Color.YELLOW.ansiCode(), "● Gelb"));
 ~~~
 
 Für einen Tipp kann jeder ausgeschriebene Farbname mit seiner eigenen Sequenz formatiert werden:
 
 ~~~java
-String guess = Ansi.colour(Color.RED.getAnsiCode(), "Rot")
+String guess = Ansi.colour(Color.RED.ansiCode(), "Rot")
         + " "
-        + Ansi.colour(Color.BLUE.getAnsiCode(), "Blau");
+        + Ansi.colour(Color.BLUE.ansiCode(), "Blau");
 System.out.println("Tipp: " + guess);
 ~~~
 
@@ -174,7 +174,7 @@ System.out.println("○ 1 Farbe richtig, Position falsch");
 
 ANSI-Sequenzen werden vom Terminal interpretiert, nicht von Java. Windows Terminal und aktuelle PowerShell unterstützen virtuelle Terminalsequenzen normalerweise direkt. In der klassischen Windows-Konsole hängt die Unterstützung von Windows-Version und Konfiguration ab. Im IntelliJ-Run-Fenster kann die Darstellung je nach Einstellung abweichen; deshalb wird immer auch im Zielterminal getestet.
 
-Bei einer Ausgabeumleitung und in manchen Test- oder CI-Umgebungen können die Steuerzeichen sichtbar sein. Die aktuelle Version deaktiviert Farben nicht automatisch.
+Bei einer Ausgabeumleitung und in manchen Test- oder CI-Umgebungen können die Steuerzeichen sichtbar sein. Die aktuelle Version deaktiviert Farben nicht automatisch anhand des Terminals. Sie deaktiviert Farben nur, wenn `--no-color` übergeben wird oder `NO_COLOR` gesetzt ist.
 
 ## Barrierefreiheit und robuste Ausgabe
 
@@ -189,7 +189,7 @@ Bei einer Ausgabeumleitung und in manchen Test- oder CI-Umgebungen können die S
 Die farbliche Darstellung selbst ist eine Eigenschaft des Terminals. Unit-Tests prüfen deshalb die erzeugte Zeichenkette statt der sichtbaren Bildschirmfarbe:
 
 ~~~java
-String result = Ansi.colour(Color.RED.getAnsiCode(), "Fehler");
+String result = Ansi.colour(Color.RED.ansiCode(), "Fehler");
 
 assertEquals("\u001B[31mFehler\u001B[0m", result);
 ~~~
@@ -205,5 +205,5 @@ Zusätzlich wird manuell geprüft:
 
 - ECMA-48: Control Functions for Coded Character Sets
 - Oracle Java API: PrintStream
-- Oracle javac-Option -encoding
+- Apache Maven Wrapper
 - Microsoft: Console Virtual Terminal Sequences

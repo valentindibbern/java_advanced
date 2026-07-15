@@ -1,4 +1,5 @@
-import enums.Color;
+package ch.valentindibbern.mastermind;
+
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

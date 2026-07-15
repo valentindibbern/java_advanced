@@ -1,8 +1,7 @@
-package enums;
+package ch.valentindibbern.mastermind;
 
 public enum GameStatus {
-    TRANSITION,
     ONGOING,
     WON,
-    LOST;
+    LOST
 }

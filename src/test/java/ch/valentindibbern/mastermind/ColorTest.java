@@ -1,4 +1,4 @@
-package enums;
+package ch.valentindibbern.mastermind;
 
 import org.junit.jupiter.api.Test;
 

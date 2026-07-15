@@ -1,25 +1,50 @@
 # Mastermind
 
-Ein Java-Kommandozeilenprogramm für klassisches Mastermind. Der Spieler errät einen geheimen Code aus vier Farben innerhalb von höchstens sieben gültigen Versuchen.
+Eine Java-Anwendung für klassisches Mastermind mit Konsolenmodus und optionaler Swing-GUI. Der Spieler errät einen geheimen Code aus vier Farben innerhalb von höchstens sieben gültigen Versuchen.
 
 ## Voraussetzungen
 
-- JDK 25, getestet mit Oracle JDK 25.0.3.
+- JDK 21 oder neuer.
 - Windows Terminal oder eine andere UTF-8- und ANSI-fähige Konsole für die farbige Darstellung.
-- IntelliJ IDEA zum Ausführen der JUnit-Tests.
+- Kein global installiertes Maven nötig; der Maven Wrapper ist Teil des Projekts.
+- Für die GUI sind keine zusätzlichen Bibliotheken nötig; Swing ist Teil des JDK.
 
-## Kompilieren und starten
+## Kompilieren, testen und starten
 
 In PowerShell im Projektordner:
 
 ~~~powershell
-$jdk = 'C:\Program Files\Java\jdk-25.0.3'
-$sources = Get-ChildItem -Recurse -Filter *.java src/main/java | ForEach-Object FullName
-& "$jdk\bin\javac.exe" -encoding UTF-8 -d out $sources
-& "$jdk\bin\java.exe" -cp out Main
+.\mvnw.cmd test
+.\mvnw.cmd package
+java -jar target\mastermind.jar
 ~~~
 
-`out/` enthält nur generierte Klassendateien und wird nicht versioniert.
+Die grafische Oberfläche starten:
+
+~~~powershell
+java -jar target\mastermind.jar --gui
+~~~
+
+Farbige ANSI-Ausgabe ist standardmässig aktiv. Für farblose Ausgabe:
+
+~~~powershell
+java -jar target\mastermind.jar --no-color
+~~~
+
+Alternativ kann die Umgebungsvariable `NO_COLOR` gesetzt werden:
+
+~~~powershell
+$env:NO_COLOR = '1'
+java -jar target\mastermind.jar
+~~~
+
+`--no-color` und `NO_COLOR` betreffen nur die Konsolenausgabe. Mit `--gui` wird immer die grafische Oberfläche gestartet.
+
+`target/mastermind.jar` ist das ausführbare JAR. `target/` enthält generierte Build-Dateien und wird nicht versioniert.
+
+## Projektstruktur
+
+Der Produktionscode liegt im Package `ch.valentindibbern.mastermind` unter `src/main/java/ch/valentindibbern/mastermind/`. Die Tests spiegeln dieses Package unter `src/test/java/ch/valentindibbern/mastermind/`.
 
 ## Bedienung
 
@@ -40,17 +65,16 @@ Nach jedem gültigen Tipp bedeutet `Schwarz` eine richtige Farbe an der richtige
 
 Bei einem Volltreffer gewinnt der Spieler sofort. Nach dem siebten nicht gewinnenden Tipp verliert er. Anschliessend zeigt das Programm den Geheimcode und fragt nach einer neuen Runde (`j` oder `n`).
 
+## GUI-Bedienung
+
+Der GUI-Modus zeigt ein klassisches Brett mit sieben Versuchzeilen. Wähle die vier Farben eines Tipps über die beschriftete Farbpalette; Wiederholungen sind erlaubt. `Letzte Farbe löschen` entfernt die letzte Wahl. `Tipp prüfen` wird erst nach vier gewählten Farben aktiv. Die Rückmeldung zeigt pro Zug zuerst schwarze und danach weisse Marken. Nach Sieg oder Niederlage wird der Geheimcode aufgedeckt und ein Dialog bietet eine neue Runde an.
+
 ## Tests
 
-Die Tests liegen unter `src/test/java/` und verwenden JUnit 5. In IntelliJ die Testklasse oder den Ordner `src/test/java` ausführen. Die Datei `.idea/java_adanced.iml` markiert diesen Ordner als Test Source Root und verwendet `junit-platform-console-standalone` 1.12.2 als Testbibliothek.
-
-Falls die JUnit-Bibliothek lokal noch nicht vorhanden ist, kann sie vor dem Testlauf mit diesem PowerShell-Befehl in das lokale Maven-Repository geladen werden:
+Die Tests verwenden JUnit 5 und werden über den Maven Wrapper ausgeführt:
 
 ~~~powershell
-$version = '1.12.2'
-$directory = "$HOME\.m2\repository\org\junit\platform\junit-platform-console-standalone\$version"
-New-Item -ItemType Directory -Force -Path $directory | Out-Null
-Invoke-WebRequest "https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/$version/junit-platform-console-standalone-$version.jar" -OutFile "$directory\junit-platform-console-standalone-$version.jar"
+.\mvnw.cmd test
 ~~~
 
-Die Produktionsanwendung benötigt keine externe Bibliothek und keinen Build-Manager.
+Der Testlauf prüft Fachlogik, Duplikatbewertung, Zustandswechsel, defensive Kopien, Konsoleneingaben, GUI-Farbwahl, Rückmeldedarstellung, Neustartverhalten sowie farbige und farblose Ausgabe.
