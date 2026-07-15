@@ -24,7 +24,7 @@ Weiter wird die vorhandene Arbeitsumgebung geprüft: Windows-PC, IntelliJ IDEA, 
 
 Die Arbeit wird in zwei Tage mit klaren Zwischenzielen aufgeteilt. Die beiden 20-Minuten-Pausen bleiben flexibel; die Mittagspause ist von 12:00 bis 13:00 Uhr. Pro Tag stehen dadurch 6 Stunden und 20 Minuten Nettoarbeitszeit zur Verfügung, insgesamt 12 Stunden und 40 Minuten.
 
-Die Fachlogik wird von beiden Oberflächen getrennt. `GameSession` kapselt den Rundenablauf für Konsole und GUI. Der Aufbau verwendet kleine Klassen mit je einer klaren Aufgabe und zentrale Konstanten für Farben, Codelänge und maximale Versuchszahl.
+Die Fachlogik wird von beiden Oberflächen getrennt. `Game` kapselt den Rundenablauf für Konsole und GUI, einschliesslich eines vollständig zurückgesetzten Neustarts. Der Aufbau verwendet kleine Klassen mit je einer klaren Aufgabe und zentrale Konstanten für Farben, Codelänge und maximale Versuchszahl.
 
 **Ergebnis:** Ablauf, Ressourcen, Prioritäten, Risiken und Meilensteine sind festgelegt.
 
@@ -130,7 +130,7 @@ Es handelt sich um Einzelarbeit. Der Praktikant plant, programmiert, testet, dok
 | Duplikate werden falsch bewertet | Kernelement der Aufgabe ist fehlerhaft | Zweiphasigen Algorithmus getrennt implementieren und mit festen Beispielen testen |
 | Maven-Abhängigkeiten können beim ersten Lauf nicht geladen werden | Automatisierte Tests verzögern sich | Internetverbindung prüfen und `.\mvnw.cmd test` erneut ausführen |
 | Zeit reicht nicht für optische Verbesserungen | Unwichtige Arbeiten bleiben offen | Zuerst Pflichtlogik, Tests, README und Abgabe sichern |
-| GUI verändert Spielregeln oder Rundenablauf | Konsole und GUI verhalten sich unterschiedlich | Gemeinsame `GameSession` verwenden und beide Modi testen |
+| GUI verändert Spielregeln oder Rundenablauf | Konsole und GUI verhalten sich unterschiedlich | Gemeinsame `Game`-Instanz verwenden und beide Modi testen |
 | Betreuungscheck fällt aus | Weniger externes Feedback | Eigene Abnahmecheckliste verwenden und offene Fragen dokumentieren |
 | Unklare Abgabeform | Falsche oder unvollständige Abgabe | Früh nachfragen; sonst ZIP mit Quellcode, Tests und README bereitstellen |
 

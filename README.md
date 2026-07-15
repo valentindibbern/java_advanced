@@ -25,13 +25,19 @@ Die grafische Oberfläche starten:
 java -jar target\mastermind.jar --gui
 ~~~
 
+Die verfügbaren Startoptionen anzeigen:
+
+~~~powershell
+java -jar target\mastermind.jar --help
+~~~
+
 Farbige ANSI-Ausgabe ist standardmässig aktiv. Für farblose Ausgabe:
 
 ~~~powershell
 java -jar target\mastermind.jar --no-color
 ~~~
 
-Alternativ kann die Umgebungsvariable `NO_COLOR` gesetzt werden:
+Alternativ kann die Umgebungsvariable `NO_COLOR` auf einen nicht leeren Wert gesetzt werden:
 
 ~~~powershell
 $env:NO_COLOR = '1'
@@ -39,12 +45,13 @@ java -jar target\mastermind.jar
 ~~~
 
 `--no-color` und `NO_COLOR` betreffen nur die Konsolenausgabe. Mit `--gui` wird immer die grafische Oberfläche gestartet.
+Unbekannte Optionen werden mit einer Fehlermeldung und dem Nutzungshinweis abgewiesen.
 
 `target/mastermind.jar` ist das ausführbare JAR. `target/` enthält generierte Build-Dateien und wird nicht versioniert.
 
 ## Projektstruktur
 
-Der Produktionscode liegt im Package `ch.valentindibbern.mastermind` unter `src/main/java/ch/valentindibbern/mastermind/`. Die Tests spiegeln dieses Package unter `src/test/java/ch/valentindibbern/mastermind/`.
+Der Produktionscode ist nach Verantwortlichkeiten gegliedert: `domain` enthält die Fachlogik ohne Oberflächenabhängigkeiten, `console` die Konsolenausgabe, `swing` die grafische Oberfläche, `ui` gemeinsame Anzeigetexte und `app` den Einstiegspunkt. Die Tests spiegeln diese Struktur unter `src/test/java/`.
 
 ## Bedienung
 
@@ -77,4 +84,4 @@ Die Tests verwenden JUnit 5 und werden über den Maven Wrapper ausgeführt:
 .\mvnw.cmd test
 ~~~
 
-Der Testlauf prüft Fachlogik, Duplikatbewertung, Zustandswechsel, defensive Kopien, Konsoleneingaben, GUI-Farbwahl, Rückmeldedarstellung, Neustartverhalten sowie farbige und farblose Ausgabe.
+Der Testlauf prüft Fachlogik, Duplikatbewertung, Zustandswechsel, defensive Kopien, ungültige Geheimcodes, Konsoleneingaben einschliesslich Eingabeende, Startoptionen, GUI-Farbwahl, Rückmeldedarstellung, Neustartverhalten sowie farbige und farblose Ausgabe.

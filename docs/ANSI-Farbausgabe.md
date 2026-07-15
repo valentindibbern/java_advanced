@@ -98,7 +98,7 @@ Für die Entwicklung gelten diese Einstellungen:
 
 ## Grundlage im Code
 
-Color modelliert die sechs erlaubten Spielfarben. Jeder Enum-Wert vereint drei Eigenschaften: seine Eingabenummer von 0 bis 5, den deutschen Anzeigenamen und seine vollständige ANSI-Farbsequenz. Die Zuordnung liegt damit zentral beim jeweiligen Farbwert.
+`domain.Color` modelliert ausschliesslich die sechs erlaubten Spielfarben und ihre Eingabenummern. Deutsche Namen liefert `ui.ColorText`; ANSI-Sequenzen gehören ausschliesslich zu `console.AnsiColorFormatter`. Dadurch bleibt die Fachlogik unabhängig von der Konsolendarstellung und von Swing.
 
 | Farbe | Eingabenummer | ANSI-Sequenz |
 | --- | ---: | --- |
@@ -111,28 +111,25 @@ Color modelliert die sechs erlaubten Spielfarben. Jeder Enum-Wert vereint drei E
 
 Orange verwendet die portable ANSI-Farbe Gelb; der Anzeigename bleibt Orange.
 
-Ansi ist eine finale Hilfsklasse mit privatem Konstruktor. Sie besitzt nur die Reset-Konstante und die statische Methode colour. Die Methode prüft beide Werte auf null und hängt immer genau einen Reset an:
+`AnsiColorFormatter` ist für die farbige Konsolenausgabe zuständig. Er hängt an jede ANSI-Farbsequenz genau einen Reset an:
 
 ~~~java
-public final class Ansi {
-    public static final String RESET = "\u001B[0m";
-
-    private Ansi() {
+String format(Color color, boolean useAnsiColours) {
+    String name = ColorText.displayName(color);
+    if (!useAnsiColours) {
+        return name;
     }
-
-    public static String colour(String colour, String text) {
-        return Objects.requireNonNull(colour) + Objects.requireNonNull(text) + RESET;
-    }
+    return ansiCode(color) + name + RESET;
 }
 ~~~
 
-Die Konsolenausgabe formatiert eine Spielfarbe so:
+`ConsoleUI` formatiert eine Spielfarbe so:
 
 ~~~java
-String formattedColor = Ansi.colour(color.ansiCode(), color.displayName());
+String formattedColor = colorFormatter.format(color, useAnsiColours);
 ~~~
 
-Ansi enthält absichtlich keine Konstanten wie RED oder GREEN. Diese Sequenzen gehören direkt zu den entsprechenden Color-Werten. Farbige Ausgabe ist standardmässig aktiv und kann mit `--no-color` oder einer nicht leeren Umgebungsvariable `NO_COLOR` deaktiviert werden.
+Die ANSI-Sequenzen gehören zur Konsolen-Präsentation (`AnsiColorFormatter`) und nicht zum fachlichen `Color`-Enum. Farbige Ausgabe ist standardmässig aktiv und kann mit `--no-color` oder einer nicht leeren Umgebungsvariable `NO_COLOR` deaktiviert werden.
 
 ## Umlaute und UTF-8
 
@@ -147,17 +144,22 @@ Die verbindliche Kette lautet daher: Dateien in UTF-8 speichern, mit dem Maven W
 Ein farbiges Zeichen allein ist nicht ausreichend. Ein Name ergänzt die Farbe:
 
 ~~~java
-System.out.println(Ansi.colour(Color.RED.ansiCode(), "● Rot"));
-System.out.println(Ansi.colour(Color.GREEN.ansiCode(), "● Grün"));
-System.out.println(Ansi.colour(Color.YELLOW.ansiCode(), "● Gelb"));
+String reset = "\u001B[0m";
+String red = "\u001B[31m";
+String green = "\u001B[32m";
+String yellow = "\u001B[33m";
+System.out.println(red + "● Rot" + reset);
+System.out.println(green + "● Grün" + reset);
+System.out.println(yellow + "● Gelb" + reset);
 ~~~
 
 Für einen Tipp kann jeder ausgeschriebene Farbname mit seiner eigenen Sequenz formatiert werden:
 
 ~~~java
-String guess = Ansi.colour(Color.RED.ansiCode(), "Rot")
+String reset = "\u001B[0m";
+String guess = "\u001B[31m" + "Rot" + reset
         + " "
-        + Ansi.colour(Color.BLUE.ansiCode(), "Blau");
+        + "\u001B[34m" + "Blau" + reset;
 System.out.println("Tipp: " + guess);
 ~~~
 
@@ -186,12 +188,12 @@ Bei einer Ausgabeumleitung und in manchen Test- oder CI-Umgebungen können die S
 
 ## Testen
 
-Die farbliche Darstellung selbst ist eine Eigenschaft des Terminals. Unit-Tests prüfen deshalb die erzeugte Zeichenkette statt der sichtbaren Bildschirmfarbe:
+Die farbliche Darstellung selbst ist eine Eigenschaft des Terminals. Die Konsolentests prüfen deshalb die erzeugte Zeichenkette statt der sichtbaren Bildschirmfarbe:
 
 ~~~java
-String result = Ansi.colour(Color.RED.ansiCode(), "Fehler");
+String output = run("0 1 2 3\\nn\\n", 0, 1, 2, 3);
 
-assertEquals("\u001B[31mFehler\u001B[0m", result);
+assertTrue(output.contains("\u001B[31mRot\u001B[0m"));
 ~~~
 
 Zusätzlich wird manuell geprüft:

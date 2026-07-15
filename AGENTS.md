@@ -2,7 +2,7 @@
 
 ## Projektzweck und Struktur
 
-Dieses Repository enthält eine Java-Kommandozeilenimplementierung des klassischen Mastermind-Spiels, die als Iperka-Lernauftrag erstellt wird. Der massgebende Aufgabenscan ist `docs/AufgabenScann.pdf`; `docs/Mastermind.md` hält nur die Spielregeln fest. Java-Quellcode gehört in `src/main/java/`, Tests in `src/test/java/` und Ressourcen in `src/main/resources/`. Bearbeite `.idea/` nur bei einer beabsichtigten Änderung der IDE-Konfiguration.
+Dieses Repository enthält eine Java-Kommandozeilenimplementierung des klassischen Mastermind-Spiels, die als Iperka-Lernauftrag erstellt wird. Java-Quellcode gehört in `src/main/java/`, Tests in `src/test/java/` und Ressourcen in `src/main/resources/`. Bearbeite `.idea/` nur bei einer beabsichtigten Änderung der IDE-Konfiguration.
 
 Das Programm erzeugt einen geheimen Code aus vier Farben aus sechs verfügbaren Farben; Wiederholungen sind erlaubt. Ein Spieler erhält höchstens sieben Tipps. Verfolge die Zustände laufend, gewonnen und verloren und zeige nach jedem Tipp eine Rückmeldung.
 
@@ -28,10 +28,6 @@ Trenne Code und Dokumentation sprachlich. Java-Quellcode, Tests, Bezeichner und 
 ## Tests
 
 Lege Unit-Tests mit gespiegelten Packages unter `src/test/java/` ab. Benenne Tests nach ihrem Verhalten, zum Beispiel `returnsBlackMarkForCorrectColourAndPosition`. Decke exakte Treffer, Farben an falschen Positionen, doppelte Farben, ungültige Eingaben, sieben fehlgeschlagene Tipps und einen Sieg ab. Die Zufallscodeerzeugung muss injizierbar oder seedbar sein, damit Tests deterministisch bleiben.
-
-## Dokumentation
-
-Prüfe bei jeder Änderung, Ergänzung oder Neuerstellung von Quellcode, Tests, Ressourcen, Build-Dateien oder Benutzerverhalten, ob die zugehörige Dokumentation angepasst werden muss. Erstelle, ergänze oder aktualisiere die relevante Dokumentation im selben Arbeitsumfang wie die technische Änderung. Dazu zählen insbesondere die README für Nutzung und Start, der Implementierungsplan für Architektur- und Umsetzungsentscheide sowie Dokumente unter docs/ für Anforderungen und Spielregeln. Halte Dokumentation und tatsächlichen Code konsistent; beschreibe keine Funktionen, Dateien oder Befehle als vorhanden, bevor sie umgesetzt sind.
 
 ## Arbeitsweise
 

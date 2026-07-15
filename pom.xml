@@ -42,7 +42,7 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.5.0</version>
                 <configuration>
-                    <mainClass>ch.valentindibbern.mastermind.Main</mainClass>
+                    <mainClass>ch.valentindibbern.mastermind.app.Main</mainClass>
                 </configuration>
             </plugin>
             <plugin>
@@ -52,7 +52,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>ch.valentindibbern.mastermind.Main</mainClass>
+                            <mainClass>ch.valentindibbern.mastermind.app.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
