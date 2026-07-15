@@ -16,6 +16,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
@@ -27,6 +28,7 @@ final class MastermindPanel extends JPanel {
     private final PegView[] secretPegs = new PegView[Game.CODE_LENGTH];
     private final PegView[][] guessPegs = new PegView[Game.MAX_ATTEMPTS][Game.CODE_LENGTH];
     private final FeedbackView[] feedbackViews = new FeedbackView[Game.MAX_ATTEMPTS];
+    // Holds the colours selected for the current, not yet submitted guess.
     private final Color[] selectedGuess = new Color[Game.CODE_LENGTH];
     private final Map<Color, JButton> colorButtons = new EnumMap<>(Color.class);
     private final JLabel statusLabel = new JLabel();
@@ -157,12 +159,11 @@ final class MastermindPanel extends JPanel {
             return;
         }
 
+        // Submit a copy because the selection array is cleared for the next attempt.
         TurnResult result = gameSession.submitGuess(selectedGuess.clone());
         feedbackViews[result.getAttemptNumber() - 1].showFeedback(result.getFeedback());
         selectedCount = 0;
-        for (int index = 0; index < selectedGuess.length; index++) {
-            selectedGuess[index] = null;
-        }
+        Arrays.fill(selectedGuess, null);
 
         if (result.getStatus() == GameStatus.ONGOING) {
             updateStatus();
@@ -238,9 +239,7 @@ final class MastermindPanel extends JPanel {
         return guessPegs[row][column];
     }
 
-    PegView getSecretPeg(int index) {
-        return secretPegs[index];
-    }
+    PegView getSecretPeg(int index) {return secretPegs[index];}
 
     FeedbackView getFeedbackView(int row) {
         return feedbackViews[row];

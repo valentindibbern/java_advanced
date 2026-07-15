@@ -67,7 +67,7 @@ Bei einem Volltreffer gewinnt der Spieler sofort. Nach dem siebten nicht gewinne
 
 ## GUI-Bedienung
 
-Der GUI-Modus zeigt ein klassisches Brett mit sieben Versuchzeilen. Wähle die vier Farben eines Tipps über die beschriftete Farbpalette; Wiederholungen sind erlaubt. `Letzte Farbe löschen` entfernt die letzte Wahl. `Tipp prüfen` wird erst nach vier gewählten Farben aktiv. Die Rückmeldung zeigt pro Zug zuerst schwarze und danach weisse Marken. Nach Sieg oder Niederlage wird der Geheimcode aufgedeckt und ein Dialog bietet eine neue Runde an.
+Der GUI-Modus zeigt ein klassisches Brett mit sieben Versuchzeilen. Wähle die vier Farben eines Tipps über die beschriftete Farbpalette; Wiederholungen sind erlaubt. `Letzte Farbe löschen` entfernt die letzte Wahl. `Tipp prüfen` wird erst nach vier gewählten Farben aktiv. Die Rückmeldung zeigt pro Zug zuerst schwarze und danach weisse Marken. Die Rückmeldungsfläche ist hellgrau hinterlegt; weisse Marken haben eine kräftige dunkle Umrandung, damit sie gut vom Hintergrund unterscheidbar sind. Nach Sieg oder Niederlage wird der Geheimcode aufgedeckt und ein Dialog bietet eine neue Runde an.
 
 ## Tests
 

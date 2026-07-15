@@ -285,6 +285,7 @@ Die Fachklassen liegen im Package `ch.valentindibbern.mastermind` unter `src/mai
 | ConsoleUITest.java | ConsoleUI | Ungültige Eingaben zählen nicht, Neustart, kontrolliertes Eingabeende sowie farbige und farblose Ausgabe. |
 | GameSessionTest.java | GameSession | Rundenstart, Ende, verdeckter Geheimcode und defensives Kopieren. |
 | MastermindPanelTest.java | GUI-Bedienung | Auswahl, Löschen, Rückmeldung, Rundenende und Neustart auf dem Event-Dispatch-Thread. |
+| FeedbackViewTest.java | GUI-Rückmeldungsdarstellung | Heller Hintergrund sowie gut abgegrenzte weisse Marke. |
 | MainTest.java | Main | GUI-Flag sowie Farbmodus aus `--no-color` und `NO_COLOR`. |
 
 ## 9. Umsetzungsreihenfolge
@@ -328,4 +329,4 @@ Das Flag `--gui` startet `MastermindFrame` auf dem Swing-Event-Dispatch-Thread. 
 
 `MastermindPanel` zeigt den verdeckten Geheimcode, sieben feste Versuchzeilen und pro Zeile vier Tippsteine sowie ein 2×2-Feld für Rückmeldesteine. Die sechs textlich beschrifteten Farbbuttons füllen das lokale `Color[4]` von links nach rechts; Wiederholungen sind erlaubt. `Letzte Farbe löschen` entfernt den letzten Eintrag. `Tipp prüfen` ist nur bei vier gewählten Farben aktiv und übergibt den Tipp an GameSession.
 
-Nach einem Zug zeichnet die GUI schwarze Marken vor weissen Marken, ohne Positionen zuzuordnen. Bei Sieg oder Niederlage deckt sie den Geheimcode auf, sperrt die Eingabe und verwendet einen deutschen Ja/Nein-Dialog. Ja erstellt durch `GameSession.startNewRound()` eine vollständig leere neue Runde, Nein schliesst das Fenster. Die `RoundEndPrompt`-Abstraktion erlaubt es, diese Dialogentscheidung in Tests ohne sichtbares Fenster zu simulieren.
+Nach einem Zug zeichnet die GUI schwarze Marken vor weissen Marken, ohne Positionen zuzuordnen. Das 2×2-Rückmeldungsfeld besitzt einen hellgrauen Hintergrund; alle Marken, insbesondere die weissen, erhalten eine kräftige dunkle Umrandung für ausreichenden Kontrast. Bei Sieg oder Niederlage deckt sie den Geheimcode auf, sperrt die Eingabe und verwendet einen deutschen Ja/Nein-Dialog. Ja erstellt durch `GameSession.startNewRound()` eine vollständig leere neue Runde, Nein schliesst das Fenster. Die `RoundEndPrompt`-Abstraktion erlaubt es, diese Dialogentscheidung in Tests ohne sichtbares Fenster zu simulieren.
