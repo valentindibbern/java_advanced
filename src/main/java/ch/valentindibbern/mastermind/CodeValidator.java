@@ -5,6 +5,7 @@ final class CodeValidator {
     }
 
     static void validateCode(Color[] code, String context) {
+        // Ein gültiger Code besteht immer aus genau vier gesetzten Farben.
         if (code == null || code.length != Game.CODE_LENGTH) {
             throw new IllegalArgumentException(context + " muss genau vier Farben enthalten.");
         }

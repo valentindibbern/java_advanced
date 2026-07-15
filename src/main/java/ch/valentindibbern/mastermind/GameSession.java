@@ -2,9 +2,7 @@ package ch.valentindibbern.mastermind;
 
 import java.util.Objects;
 
-/**
- * Coordinates the lifetime of one current Mastermind round for a user interface.
- */
+/** Verwaltet die aktuelle Mastermind-Runde für eine Benutzeroberfläche. */
 public final class GameSession {
     private final CodeGenerator codeGenerator;
     private final FeedbackEvaluator feedbackEvaluator;
@@ -17,6 +15,7 @@ public final class GameSession {
     }
 
     public void startNewRound() {
+        // Eine neue Instanz setzt Code, Verlauf und Versuche vollständig zurück.
         game = new Game(codeGenerator, feedbackEvaluator);
     }
 
@@ -33,6 +32,7 @@ public final class GameSession {
     }
 
     public Color[] revealSecretCode() {
+        // Der Geheimcode bleibt bis zum Ende der Runde verborgen.
         if (game.getStatus() == GameStatus.ONGOING) {
             throw new IllegalStateException("Der Geheimcode darf erst nach dem Rundenende angezeigt werden.");
         }

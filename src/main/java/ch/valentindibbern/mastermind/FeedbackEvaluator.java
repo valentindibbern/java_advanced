@@ -10,7 +10,7 @@ public class FeedbackEvaluator {
         int blackMarks = 0;
         int whiteMarks = 0;
 
-        // Reserve exact matches first to avoid double-counting duplicate colours.
+        // Exakte Treffer zuerst reservieren, damit doppelte Farben nicht doppelt zählen.
         for (int index = 0; index < Game.CODE_LENGTH; index++) {
             if (secret[index] == guess[index]) {
                 blackMarks++;
@@ -19,7 +19,7 @@ public class FeedbackEvaluator {
             }
         }
 
-        // Match the remaining colours only once, regardless of position.
+        // Übrige Farben unabhängig von ihrer Position nur einmal zuordnen.
         for (int guessIndex = 0; guessIndex < Game.CODE_LENGTH; guessIndex++) {
             if (usedGuessPositions[guessIndex]) {
                 continue;

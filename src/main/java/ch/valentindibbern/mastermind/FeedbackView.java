@@ -50,6 +50,7 @@ final class FeedbackView extends JComponent {
         graphics2D.setColor(BACKGROUND_COLOR);
         graphics2D.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
         int marker = 13;
+        // Die vier Rückmeldungen werden als 2x2-Raster dargestellt.
         for (int index = 0; index < Game.CODE_LENGTH; index++) {
             int x = 4 + (index % 2) * 19;
             int y = 4 + (index / 2) * 19;

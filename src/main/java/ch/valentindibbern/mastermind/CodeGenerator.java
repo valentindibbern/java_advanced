@@ -14,6 +14,7 @@ public class CodeGenerator {
         Color[] code = new Color[Game.CODE_LENGTH];
         Color[] colors = Color.values();
 
+        // Jede Position wird unabhängig gewählt; Wiederholungen sind erlaubt.
         for (int index = 0; index < code.length; index++) {
             code[index] = colors[random.nextInt(colors.length)];
         }

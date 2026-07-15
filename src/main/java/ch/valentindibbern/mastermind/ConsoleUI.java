@@ -65,6 +65,7 @@ public class ConsoleUI {
                 continue;
             }
 
+            // Beliebig viele Leerzeichen zwischen den vier Farbnummern zulassen.
             String[] values = line.split("\\s+");
             if (values.length != Game.CODE_LENGTH) {
                 out.println("Ungültige Eingabe: Es werden genau vier Farbnummern erwartet.");

@@ -28,7 +28,7 @@ final class MastermindPanel extends JPanel {
     private final PegView[] secretPegs = new PegView[Game.CODE_LENGTH];
     private final PegView[][] guessPegs = new PegView[Game.MAX_ATTEMPTS][Game.CODE_LENGTH];
     private final FeedbackView[] feedbackViews = new FeedbackView[Game.MAX_ATTEMPTS];
-    // Holds the colours selected for the current, not yet submitted guess.
+    // Speichert die Farben des aktuellen, noch nicht abgegebenen Tipps.
     private final Color[] selectedGuess = new Color[Game.CODE_LENGTH];
     private final Map<Color, JButton> colorButtons = new EnumMap<>(Color.class);
     private final JLabel statusLabel = new JLabel();
@@ -159,7 +159,7 @@ final class MastermindPanel extends JPanel {
             return;
         }
 
-        // Submit a copy because the selection array is cleared for the next attempt.
+        // Kopie abgeben, da die Auswahl anschliessend für den nächsten Versuch geleert wird.
         TurnResult result = gameSession.submitGuess(selectedGuess.clone());
         feedbackViews[result.getAttemptNumber() - 1].showFeedback(result.getFeedback());
         selectedCount = 0;
@@ -187,6 +187,7 @@ final class MastermindPanel extends JPanel {
             selectedGuess[index] = null;
             secretPegs[index].showHidden();
         }
+        // Alle Zeilen und Rückmeldungen für eine neue Runde zurücksetzen.
         for (int row = 0; row < Game.MAX_ATTEMPTS; row++) {
             for (int column = 0; column < Game.CODE_LENGTH; column++) {
                 guessPegs[row][column].clear();
@@ -210,6 +211,7 @@ final class MastermindPanel extends JPanel {
     }
 
     private void updateControls() {
+        // Schaltflächen nur aktivieren, wenn die aktuelle Aktion möglich ist.
         boolean ongoing = gameSession.getStatus() == GameStatus.ONGOING;
         boolean hasSpace = selectedCount < Game.CODE_LENGTH;
         for (JButton colorButton : colorButtons.values()) {

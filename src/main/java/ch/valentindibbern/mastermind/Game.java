@@ -8,7 +8,7 @@ public class Game {
     static final int MAX_ATTEMPTS = 7;
 
     private final Color[] secretCode;
-    // One row per attempt, with four colours per guess.
+    // Jede Zeile speichert die vier Farben eines Versuchs.
     private final Color[][] guessHistory;
     private final Feedback[] feedbackHistory;
     private final FeedbackEvaluator feedbackEvaluator;
@@ -36,7 +36,7 @@ public class Game {
 
         CodeValidator.validateCode(guess, "Tipp");
         Feedback feedback = feedbackEvaluator.evaluate(secretCode, guess);
-        // Store a copy so later changes to the caller's array cannot affect the game.
+        // Kopie speichern, damit Änderungen am übergebenen Array das Spiel nicht verändern.
         Color[] storedGuess = Arrays.copyOf(guess, guess.length);
         guessHistory[attemptsUsed] = storedGuess;
         feedbackHistory[attemptsUsed] = feedback;
@@ -64,7 +64,7 @@ public class Game {
     }
 
     public Color[][] getGuessHistory() {
-        // Copy both array levels to keep the history immutable from outside.
+        // Beide Array-Ebenen kopieren, damit der Verlauf von aussen unveränderlich bleibt.
         Color[][] historyCopy = new Color[guessHistory.length][];
 
         for (int index = 0; index < guessHistory.length; index++) {

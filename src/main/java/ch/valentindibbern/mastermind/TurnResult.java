@@ -20,6 +20,7 @@ public final class TurnResult {
             throw new IllegalArgumentException("Ungültige Versuchszahl: " + attemptNumber);
         }
 
+        // Der gespeicherte Tipp ist von nachträglichen Änderungen entkoppelt.
         this.guess = Arrays.copyOf(guess, guess.length);
         this.feedback = Objects.requireNonNull(feedback);
         this.status = Objects.requireNonNull(status);
@@ -27,6 +28,7 @@ public final class TurnResult {
     }
 
     public Color[] getGuess() {
+        // Keine interne Array-Referenz nach aussen geben.
         return Arrays.copyOf(guess, guess.length);
     }
 

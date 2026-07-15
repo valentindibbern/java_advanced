@@ -54,6 +54,7 @@ final class PegView extends JComponent {
         int x = (getWidth() - diameter) / 2;
         int y = (getHeight() - diameter) / 2;
 
+        // Verdeckt, leer und gewählt haben jeweils eine eigene Darstellung.
         if (hidden) {
             graphics2D.setColor(new java.awt.Color(95, 95, 95));
         } else if (color == null) {
